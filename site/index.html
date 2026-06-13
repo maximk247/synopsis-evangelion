@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light" data-size="m" data-family="serif">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Евангельский синопсис</title>
+  <meta name="description" content="Четвероевангелие в параллельных столбцах — Евангельский синопсис для чтения онлайн.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%237a5c2e'/><text x='16' y='23' font-size='20' text-anchor='middle' fill='%23fffefb' font-family='Georgia,serif'>с</text></svg>">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">К содержанию</a>
+
+  <header class="topbar">
+    <div class="topbar__inner">
+      <button class="iconbtn" id="navHome" title="На главную" aria-label="На главную">☰</button>
+      <a class="brand" href="#/">Евангельский <span>синопсис</span></a>
+
+      <form class="search" id="searchForm" role="search" autocomplete="off">
+        <input id="searchInput" type="search" name="q"
+               placeholder="Поиск или ссылка (напр. Мф 5:3)…"
+               aria-label="Поиск по тексту или ссылка на стих">
+        <div class="search__hits" id="searchHits" hidden></div>
+      </form>
+
+      <button class="iconbtn" id="openSettings" title="Настройки" aria-label="Настройки">⚙</button>
+    </div>
+    <div class="progress" id="progressBar"><span></span></div>
+  </header>
+
+  <main id="main" class="main" tabindex="-1">
+    <div class="loading" id="loading">Загрузка текста…</div>
+  </main>
+
+  <nav class="pager" id="pager" hidden>
+    <button id="prevBtn" class="pager__btn" aria-label="Предыдущая перикопа">‹ Назад</button>
+    <span id="pagerLabel" class="pager__label"></span>
+    <button id="nextBtn" class="pager__btn" aria-label="Следующая перикопа">Вперёд ›</button>
+  </nav>
+
+  <!-- Settings drawer -->
+  <div class="drawer" id="settings" hidden aria-hidden="true">
+    <div class="drawer__panel" role="dialog" aria-label="Настройки чтения">
+      <div class="drawer__head">
+        <h2>Настройки чтения</h2>
+        <button class="iconbtn" id="closeSettings" aria-label="Закрыть">✕</button>
+      </div>
+
+      <fieldset class="setrow">
+        <legend>Тема</legend>
+        <div class="seg" data-setting="theme">
+          <button data-value="light">Светлая</button>
+          <button data-value="sepia">Сепия</button>
+          <button data-value="dark">Тёмная</button>
+        </div>
+      </fieldset>
+
+      <fieldset class="setrow">
+        <legend>Размер шрифта</legend>
+        <div class="seg" data-setting="size">
+          <button data-value="s">A</button>
+          <button data-value="m">A</button>
+          <button data-value="l">A</button>
+          <button data-value="xl">A</button>
+        </div>
+      </fieldset>
+
+      <fieldset class="setrow">
+        <legend>Шрифт</legend>
+        <div class="seg" data-setting="family">
+          <button data-value="serif">С засечками</button>
+          <button data-value="sans">Без засечек</button>
+        </div>
+      </fieldset>
+
+      <fieldset class="setrow">
+        <legend>Подсветка параллелей</legend>
+        <div class="seg" data-setting="align">
+          <button data-value="on">Вкл</button>
+          <button data-value="off">Выкл</button>
+        </div>
+      </fieldset>
+
+      <p class="muted small">Настройки сохраняются в этом браузере.</p>
+    </div>
+    <div class="drawer__scrim" id="settingsScrim"></div>
+  </div>
+
+  <footer class="sitefoot">
+    <div class="topbar__inner">
+      <span class="muted small">Текст в Синодальном переводе. Деление и параллели — по изданию «Евангельский синопсис».</span>
+    </div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
