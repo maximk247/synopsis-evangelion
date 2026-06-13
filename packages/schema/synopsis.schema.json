@@ -1,0 +1,460 @@
+{
+  "$ref": "#/definitions/Synopsis",
+  "definitions": {
+    "Synopsis": {
+      "type": "object",
+      "properties": {
+        "meta": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "subtitle": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "title"
+          ],
+          "additionalProperties": false
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "title": {
+                "type": "string"
+              },
+              "pericopeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "pericopeIds"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "pericopes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "place": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "pages": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "order": {
+                "type": "integer"
+              },
+              "columns": {
+                "type": "object",
+                "properties": {
+                  "mt": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "segments": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "gospel": {
+                                  "type": "string",
+                                  "enum": [
+                                    "mt",
+                                    "mk",
+                                    "lk",
+                                    "jn"
+                                  ]
+                                },
+                                "chapter": {
+                                  "type": "integer"
+                                },
+                                "prev": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "ref": {
+                                          "type": "string"
+                                        },
+                                        "p": {
+                                          "type": "string"
+                                        },
+                                        "pRaw": {
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "ref",
+                                        "p",
+                                        "pRaw"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "next": {
+                                  "anyOf": [
+                                    {
+                                      "$ref": "#/definitions/Synopsis/properties/pericopes/items/properties/columns/properties/mt/anyOf/0/properties/segments/items/properties/prev/anyOf/0"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "v": {
+                                            "type": "integer"
+                                          },
+                                          "suf": {
+                                            "type": "string"
+                                          },
+                                          "t": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "v",
+                                          "suf",
+                                          "t"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "note": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "note"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    ]
+                                  }
+                                }
+                              },
+                              "required": [
+                                "gospel",
+                                "chapter",
+                                "prev",
+                                "next",
+                                "items"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "segments"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "mk": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/definitions/Synopsis/properties/pericopes/items/properties/columns/properties/mt/anyOf/0"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "lk": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/definitions/Synopsis/properties/pericopes/items/properties/columns/properties/mt/anyOf/0"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "jn": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/definitions/Synopsis/properties/pericopes/items/properties/columns/properties/mt/anyOf/0"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "mt",
+                  "mk",
+                  "lk",
+                  "jn"
+                ],
+                "additionalProperties": false
+              },
+              "alignment": {
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "mt": {
+                          "type": "string"
+                        },
+                        "mk": {
+                          "type": "string"
+                        },
+                        "lk": {
+                          "type": "string"
+                        },
+                        "jn": {
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "headnote": {
+                "type": "string"
+              },
+              "extra": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/Synopsis/properties/pericopes/items/properties/columns/properties/mt/anyOf/0/properties/segments/items/properties/items/items/anyOf/0"
+                    }
+                  }
+                },
+                "required": [
+                  "source",
+                  "items"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "place",
+              "pages",
+              "order",
+              "columns",
+              "alignment"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "gospelIndex": {
+          "type": "object",
+          "properties": {
+            "mt": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ref": {
+                    "type": "string"
+                  },
+                  "pericope": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "np": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "ref",
+                  "pericope",
+                  "title",
+                  "np"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "mk": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Synopsis/properties/gospelIndex/properties/mt/items"
+              }
+            },
+            "lk": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Synopsis/properties/gospelIndex/properties/mt/items"
+              }
+            },
+            "jn": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Synopsis/properties/gospelIndex/properties/mt/items"
+              }
+            }
+          },
+          "required": [
+            "mt",
+            "mk",
+            "lk",
+            "jn"
+          ],
+          "additionalProperties": false
+        },
+        "prefaces": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "paragraphs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "title",
+              "paragraphs"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "footnotes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "n": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "n",
+              "text"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "appendix2": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "intro": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": [
+            "title",
+            "intro",
+            "columns",
+            "rows"
+          ],
+          "additionalProperties": false
+        },
+        "aliases": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "meta",
+        "sections",
+        "pericopes",
+        "gospelIndex",
+        "prefaces",
+        "footnotes",
+        "appendix2",
+        "aliases"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
