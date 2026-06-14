@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Парсер «Евангельского синопсиса» (PDF -> data/synopsis.json).
 
@@ -902,7 +901,6 @@ def parse_appendix2(pdf):
 # ------------------------------------------------------------------ validate
 
 def validate(pericopes, expected_map, gospel_index):
-    by_id = {p["id"]: p for p in pericopes}
     problems = 0
     parsed_sets = defaultdict(set)
     for p in pericopes:
