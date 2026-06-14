@@ -26,3 +26,7 @@ __pycache__/
 .DS_Store
 *.log
 .idea/
+
+# Generated web data
+apps/web/static/data/
+apps/web/src/lib/generated/
