@@ -24,6 +24,7 @@
 <input
   class="filter"
   type="search"
+  name="filter"
   placeholder="Фильтр: номер, название или место…"
   bind:value={query}
   aria-label="Фильтр перикоп"
