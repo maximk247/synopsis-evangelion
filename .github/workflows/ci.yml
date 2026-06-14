@@ -36,3 +36,29 @@ jobs:
         run: |
           pnpm --filter @synopsis/schema gen:schema
           git diff --exit-code -- packages/schema/synopsis.schema.json
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck web
+        run: pnpm --filter web typecheck
+
+      - name: Test web
+        run: pnpm --filter web test
+
+      - name: Build web
+        run: pnpm --filter web build
