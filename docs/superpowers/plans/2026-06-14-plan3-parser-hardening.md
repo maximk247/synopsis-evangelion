@@ -2,6 +2,8 @@
 
 > **For agentic workers:** Executed inline on `master`. Steps use checkbox (`- [ ]`) syntax. Independent of the web app. The non-negotiable invariant: **the parser's output must not change** — a golden regression test compares a fresh parse against the committed `data/synopsis.json`.
 
+> **STATUS: COMPLETED 2026-06-14.** `data/synopsis.json` is byte-identical through all changes; 4 golden tests, ruff clean, mypy (gradual) clean. One extra commit beyond the plan: the imported `parse_report.txt` and README count (19) were stale relative to the committed parser, so they were synced to the real value (22 validation diffs) — the data contract was unaffected. Tools resolved: ruff 0.15, mypy 1.20, pytest 8.4 (local Python 3.14; CI uses 3.12).
+
 **Goal:** Make the existing `parser/parse_pdf.py` maintainable and CI-guarded: a `pyproject.toml` with ruff + mypy + pytest config, a small testable seam (`build_data`) extracted from `main`, a golden regression test over the reference pericopes (12, 21, 51.1) plus full-output equality, lint (ruff) and type-check (mypy, gradual) green, and a Python CI job.
 
 **Architecture:** `parse_pdf.py` keeps its logic untouched; only `main()` is split so the data-building is callable without writing files. Tests parse the real PDF once (module-scoped fixture) and assert the result equals the committed JSON. mypy runs in a deliberately lenient "gradual typing" mode (the file is legacy, ~1046 lines); ruff runs with safe autofixes and a few documented ignores so behavior is preserved.
