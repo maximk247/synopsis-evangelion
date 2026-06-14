@@ -27,6 +27,27 @@ python -m http.server -d site 8000   # http://localhost:8000/
 `PYTHONIOENCODING=utf-8` нужен только для корректного вывода кириллицы в консоль
 (на сам JSON не влияет). Отладка одной перикопы: `python parser/parse_pdf.py 21`.
 
+## Парсер: разработка
+
+```bash
+# окружение (ruff, mypy, pytest, pdfplumber)
+python -m pip install -r parser/requirements-dev.txt
+
+# перегенерировать данные из PDF
+python parser/parse_pdf.py            # -> data/synopsis.json (+ parse_report.txt)
+python parser/parse_pdf.py 21         # + распечатать перикопу 21 для отладки
+
+# проверки (из каталога parser/)
+cd parser
+ruff check .            # линт
+mypy parse_pdf.py       # типы (gradual)
+python -m pytest -q     # golden-тест: вывод сверяется с data/synopsis.json
+```
+
+Golden-тест (`parser/tests/test_golden.py`) разбирает PDF заново и сверяет
+результат с зафиксированным `data/synopsis.json` (плюс контрольные перикопы
+12/21/51.1) — гарантия, что правки парсера не меняют вывод.
+
 ## Деплой
 
 Папка `site/` самодостаточна. Залейте её на **GitHub Pages / Netlify / Vercel**
