@@ -3,6 +3,7 @@
   import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
   import Pager from '$lib/components/Pager.svelte';
   import PericopeColumns from '$lib/components/PericopeColumns.svelte';
+  import BookmarkButton from '$lib/components/BookmarkButton.svelte';
   import { reading } from '$lib/stores/reading.svelte.js';
   import type { PageData } from './$types';
 
@@ -37,7 +38,10 @@
 <Breadcrumbs sectionTitle={data.sectionTitle} current="{p.id}. {p.title}" />
 
 <header class="phead">
-  <h1>{p.id}. {p.title}</h1>
+  <div class="phead__top">
+    <h1>{p.id}. {p.title}</h1>
+    <BookmarkButton id={p.id} />
+  </div>
   {#if p.place}<p class="place">{p.place}</p>{/if}
   {#if p.headnote}<p class="headnote">{p.headnote}</p>{/if}
 </header>
@@ -60,6 +64,12 @@
 <style>
   .phead {
     margin-bottom: 1rem;
+  }
+  .phead__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
   }
   .phead h1 {
     font-size: 1.4rem;

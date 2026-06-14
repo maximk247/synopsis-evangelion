@@ -1,6 +1,7 @@
 <script lang="ts">
   import { base } from '$app/paths';
   import GospelPresence from '$lib/components/GospelPresence.svelte';
+  import { reading } from '$lib/stores/reading.svelte.js';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -18,6 +19,13 @@
 </script>
 
 <svelte:head><title>Евангельский синопсис — содержание</title></svelte:head>
+
+{#if reading.last}
+  <p class="resume">
+    Продолжить чтение:
+    <a href="{base}/p/{reading.last.id}">{reading.last.id}. {reading.last.title}</a>
+  </p>
+{/if}
 
 <h1>Содержание</h1>
 
@@ -51,6 +59,13 @@
 {/each}
 
 <style>
+  .resume {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem 0.8rem;
+    margin-bottom: 1rem;
+  }
   .filter {
     width: 100%;
     padding: 0.6rem 0.8rem;
