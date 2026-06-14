@@ -994,9 +994,12 @@ def validate(pericopes, expected_map, gospel_index):
 
 # ----------------------------------------------------------------------- run
 
-def main():
-    debug_ids = set(sys.argv[1:])
-    pdf = pdfplumber.open(PDF_PATH)
+def build_data(pdf):
+    """Parse an open pdfplumber PDF into the synopsis data dict.
+
+    Returns (data, problems). Pure w.r.t. the filesystem (writes nothing);
+    main() handles output. Behavior is identical to the original main().
+    """
     log("=== Разбор поисковых таблиц ===")
     gospel_index, expected_map = parse_index(pdf)
     for g in GOSPel_ORDER:
@@ -1028,6 +1031,15 @@ def main():
         "appendix2": appendix2,
         "aliases": PERICOPE_ALIASES,
     }
+    return data, problems
+
+
+def main():
+    debug_ids = set(sys.argv[1:])
+    pdf = pdfplumber.open(PDF_PATH)
+    data, problems = build_data(pdf)
+    pericopes = data["pericopes"]
+
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=1)
