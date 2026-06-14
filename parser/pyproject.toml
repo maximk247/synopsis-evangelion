@@ -1,0 +1,24 @@
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+# Legacy parser: keep the original mixed-case constant name and allow a few patterns.
+ignore = [
+  "E501", # long verse-count tables are clearer on one line
+  "N816", # GOSPel_ORDER: original constant name kept to avoid churn
+  "E741", # ambiguous single-letter loop vars (g, c) are domain-conventional
+]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true   # pdfplumber ships no stubs
+disallow_untyped_defs = false   # gradual: legacy bodies stay unannotated
+check_untyped_defs = false
+warn_return_any = false
+warn_unused_ignores = false
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
