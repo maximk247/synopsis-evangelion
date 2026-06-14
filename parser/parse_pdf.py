@@ -992,7 +992,7 @@ def validate(pericopes, expected_map, gospel_index):
 
 # ----------------------------------------------------------------------- run
 
-def build_data(pdf):
+def build_data(pdf) -> tuple[dict, int]:
     """Parse an open pdfplumber PDF into the synopsis data dict.
 
     Returns (data, problems). Pure w.r.t. the filesystem (writes nothing);
