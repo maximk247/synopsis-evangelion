@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%sveltekit.assets%/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      try {
+        const s = localStorage.getItem('synopsis:settings');
+        if (s) {
+          const v = JSON.parse(s);
+          if (v.theme) document.documentElement.dataset.theme = v.theme;
+          if (v.fontSize) document.documentElement.dataset.font = v.fontSize;
+          document.documentElement.dataset.serif = v.serif === false ? 'off' : 'on';
+        }
+      } catch (e) {}
+    </script>
+    %sveltekit.head%
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
+</html>
