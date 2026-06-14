@@ -68,3 +68,27 @@ jobs:
 
       - name: E2E
         run: pnpm --filter web test:e2e
+
+  parser:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: parser
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Typecheck (mypy)
+        run: mypy parse_pdf.py
+
+      - name: Test (pytest golden)
+        run: python -m pytest -q
