@@ -9,9 +9,8 @@
         const s = localStorage.getItem('synopsis:settings');
         if (s) {
           const v = JSON.parse(s);
-          if (v.theme) document.documentElement.dataset.theme = v.theme;
+          document.documentElement.dataset.theme = v.theme === 'dark' ? 'dark' : 'light';
           if (v.fontSize) document.documentElement.dataset.font = v.fontSize;
-          document.documentElement.dataset.serif = v.serif === false ? 'off' : 'on';
         }
       } catch (e) {}
     </script>
