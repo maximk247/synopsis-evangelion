@@ -60,19 +60,20 @@
 
 <style>
   .resume {
-    background: var(--bg-soft);
+    background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--radius);
     padding: 0.5rem 0.8rem;
     margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
   }
   .filter {
     width: 100%;
     padding: 0.6rem 0.8rem;
     margin: 0.5rem 0 1.5rem;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg);
+    border-radius: var(--radius);
+    background: var(--card);
     color: var(--fg);
     font: inherit;
   }
@@ -80,8 +81,8 @@
     margin-bottom: 1.5rem;
   }
   .sec__title {
-    font-size: 1.05rem;
-    border-bottom: 1px solid var(--border);
+    font-size: var(--fs-h3);
+    border-bottom: 2px solid var(--accent-soft);
     padding-bottom: 0.3rem;
   }
   .plist {
@@ -104,7 +105,7 @@
     min-width: 0;
   }
   .pitem__id {
-    color: var(--fg-muted);
+    color: var(--accent-medium);
     font-variant-numeric: tabular-nums;
     min-width: 2.5rem;
   }
