@@ -1,5 +1,6 @@
 <script lang="ts">
   import { settings, type Theme, type FontSize } from '$lib/stores/settings.svelte.js';
+  import { READING_FONT_OPTIONS, type ReadingFontKey } from '$lib/data/fonts.js';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -8,7 +9,6 @@
 
   const themes: { value: Theme; label: string }[] = [
     { value: 'light', label: 'Светлая' },
-    { value: 'sepia', label: 'Сепия' },
     { value: 'dark', label: 'Тёмная' }
   ];
   const sizes: { value: FontSize; label: string }[] = [
@@ -97,15 +97,17 @@
     </fieldset>
 
     <fieldset>
-      <legend>Текст</legend>
-      <label class="check">
-        <input
-          type="checkbox"
-          checked={settings.serif}
-          onchange={(e) => settings.setSerif(e.currentTarget.checked)}
-        />
-        С засечками
-      </label>
+      <legend>Шрифт</legend>
+      <select
+        class="font-select"
+        value={settings.readingFont}
+        onchange={(e) => settings.setReadingFont(e.currentTarget.value as ReadingFontKey)}
+        aria-label="Шрифт текста"
+      >
+        {#each READING_FONT_OPTIONS as f (f.key)}
+          <option value={f.key}>{f.label}</option>
+        {/each}
+      </select>
     </fieldset>
 
     <fieldset>
@@ -191,5 +193,17 @@
     gap: 0.5rem;
     align-items: center;
     cursor: pointer;
+  }
+  .font-select {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--fg);
+    cursor: pointer;
+  }
+  .font-select:hover {
+    border-color: var(--border-strong);
   }
 </style>
