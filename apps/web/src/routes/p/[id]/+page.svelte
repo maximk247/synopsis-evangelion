@@ -72,7 +72,7 @@
     gap: 1rem;
   }
   .phead h1 {
-    font-size: 1.4rem;
+    font-size: var(--fs-h1);
     margin: 0 0 0.25rem;
   }
   .place {
@@ -81,9 +81,10 @@
     margin: 0 0 0.5rem;
   }
   .headnote {
-    background: var(--bg-soft);
+    background: var(--card);
     padding: 0.5rem 0.75rem;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
   }
   .extra {
     margin-top: 1.5rem;
@@ -91,7 +92,7 @@
     border-top: 1px solid var(--border);
   }
   .vnum {
-    color: var(--fg-muted);
+    color: var(--accent-subtle);
     font-weight: 600;
   }
   :global(.deep-target) {

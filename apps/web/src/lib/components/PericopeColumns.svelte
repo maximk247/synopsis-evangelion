@@ -86,12 +86,16 @@
     font-size: 1rem;
     margin: 0 0 0.5rem;
     padding-bottom: 0.3rem;
-    border-bottom: 2px solid var(--border);
+    border-bottom: 2px solid var(--accent-soft);
+    font-family: var(--font-serif);
+    color: var(--accent);
   }
   .chapter {
     color: var(--fg-muted);
-    font-size: 0.8em;
+    font-size: var(--fs-caption);
     margin: 0.5rem 0 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
   .flow {
     margin: 0 0 0.5rem;
