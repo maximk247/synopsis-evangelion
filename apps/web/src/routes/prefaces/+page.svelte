@@ -27,7 +27,7 @@
     max-width: 70ch;
   }
   .prose h2 {
-    font-size: 1.1rem;
+    font-size: var(--fs-h3);
   }
   .muted {
     color: var(--fg-muted);
