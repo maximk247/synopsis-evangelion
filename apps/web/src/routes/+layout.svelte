@@ -56,11 +56,12 @@
   .brand {
     font-weight: 600;
     color: var(--fg);
+    font-family: var(--font-serif);
   }
   .links {
     display: flex;
     gap: 0.75rem;
-    font-size: 0.9em;
+    font-size: var(--fs-ui-sm);
   }
   .gear {
     border: 1px solid var(--border);
