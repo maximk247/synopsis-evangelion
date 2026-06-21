@@ -41,27 +41,32 @@
   }
   .switch a {
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     padding: 0.3rem 0.7rem;
     color: var(--fg);
+    background: var(--card);
   }
   .switch a.active {
     background: var(--accent-soft);
     border-color: var(--accent);
     color: var(--accent);
+    font-weight: var(--fw-semibold);
   }
   .pmark {
-    font-size: 0.95rem;
+    font-size: var(--fs-h3);
     margin: 1.25rem 0 0.25rem;
     color: var(--accent);
+    font-family: var(--font-serif);
   }
   .chapter {
-    font-size: 0.85rem;
+    font-size: var(--fs-caption);
     color: var(--fg-muted);
     margin: 0.75rem 0 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
   .vnum {
-    color: var(--fg-muted);
+    color: var(--accent-subtle);
     font-weight: 600;
   }
 </style>
