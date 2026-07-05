@@ -17,17 +17,23 @@
 <style>
   .bm {
     border: 1px solid var(--border);
-    background: var(--bg);
+    background: var(--card);
     color: var(--fg-muted);
-    border-radius: 6px;
-    padding: 0.3rem 0.6rem;
+    border-radius: var(--radius-pill);
+    padding: 0.45rem 0.75rem;
     cursor: pointer;
     font: inherit;
     font-size: 0.85em;
     white-space: nowrap;
+    box-shadow: var(--shadow-sm);
+  }
+  .bm:hover {
+    border-color: var(--border-strong);
+    background: var(--hover);
   }
   .bm.active {
     color: var(--accent);
     border-color: var(--accent);
+    background: var(--accent-soft);
   }
 </style>

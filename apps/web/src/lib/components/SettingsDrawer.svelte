@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { settings, type Theme, type FontSize } from '$lib/stores/settings.svelte.js';
+  import {
+    settings,
+    FONT_SIZE_MIN,
+    FONT_SIZE_MAX,
+    FONT_SIZE_STEP,
+    type Theme
+  } from '$lib/stores/settings.svelte.js';
   import { READING_FONT_OPTIONS, type ReadingFontKey } from '$lib/data/fonts.js';
 
   let { open = $bindable() }: { open: boolean } = $props();
@@ -10,11 +16,6 @@
   const themes: { value: Theme; label: string }[] = [
     { value: 'light', label: 'Светлая' },
     { value: 'dark', label: 'Тёмная' }
-  ];
-  const sizes: { value: FontSize; label: string }[] = [
-    { value: 'sm', label: 'A−' },
-    { value: 'md', label: 'A' },
-    { value: 'lg', label: 'A+' }
   ];
 
   function close() {
@@ -29,7 +30,7 @@
     }
     if (e.key === 'Tab' && panel) {
       const focusables = panel.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, [tabindex]:not([tabindex="-1"])'
+        'button:not([disabled]), [href], input, select, [tabindex]:not([tabindex="-1"])'
       );
       if (focusables.length === 0) return;
       const first = focusables[0]!;
@@ -47,7 +48,7 @@
   $effect(() => {
     if (open) {
       lastFocused = document.activeElement as HTMLElement | null;
-      queueMicrotask(() => panel?.querySelector<HTMLElement>('button')?.focus());
+      queueMicrotask(() => panel?.querySelector<HTMLElement>('button:not([disabled])')?.focus());
     } else {
       lastFocused?.focus?.();
     }
@@ -65,13 +66,8 @@
     bind:this={panel}
     onkeydown={onKeydown}
   >
-    <div class="panel__head">
-      <h2>Настройки</h2>
-      <button class="x" onclick={close} aria-label="Закрыть">✕</button>
-    </div>
-
-    <fieldset>
-      <legend>Тема</legend>
+    <div class="group">
+      <span class="label">Тема</span>
       <div class="row">
         {#each themes as t (t.value)}
           <button
@@ -81,23 +77,38 @@
           >
         {/each}
       </div>
-    </fieldset>
+    </div>
 
-    <fieldset>
-      <legend>Размер шрифта</legend>
-      <div class="row">
-        {#each sizes as s (s.value)}
-          <button
-            class:active={settings.fontSize === s.value}
-            aria-pressed={settings.fontSize === s.value}
-            onclick={() => settings.setFontSize(s.value)}>{s.label}</button
-          >
-        {/each}
+    <div class="group">
+      <span class="label">Размер шрифта</span>
+      <div class="row stepper">
+        <button
+          aria-label="Мельче"
+          disabled={settings.fontSize <= FONT_SIZE_MIN}
+          onclick={() => settings.stepFontSize(-FONT_SIZE_STEP)}>A−</button
+        >
+        <input
+          class="value"
+          type="number"
+          min={FONT_SIZE_MIN}
+          max={FONT_SIZE_MAX}
+          value={settings.fontSize}
+          aria-label="Размер шрифта, px"
+          onchange={(e) => {
+            settings.setFontSize(Number(e.currentTarget.value) || settings.fontSize);
+            e.currentTarget.value = String(settings.fontSize);
+          }}
+        />
+        <button
+          aria-label="Крупнее"
+          disabled={settings.fontSize >= FONT_SIZE_MAX}
+          onclick={() => settings.stepFontSize(FONT_SIZE_STEP)}>A+</button
+        >
       </div>
-    </fieldset>
+    </div>
 
-    <fieldset>
-      <legend>Шрифт</legend>
+    <div class="group">
+      <span class="label">Шрифт</span>
       <select
         class="font-select"
         value={settings.readingFont}
@@ -108,19 +119,7 @@
           <option value={f.key}>{f.label}</option>
         {/each}
       </select>
-    </fieldset>
-
-    <fieldset>
-      <legend>Параллели</legend>
-      <label class="check">
-        <input
-          type="checkbox"
-          checked={settings.highlightParallels}
-          onchange={(e) => settings.setHighlightParallels(e.currentTarget.checked)}
-        />
-        Подсвечивать параллельные стихи
-      </label>
-    </fieldset>
+    </div>
   </div>
 {/if}
 
@@ -128,71 +127,78 @@
   .scrim {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
     z-index: 100;
   }
   .panel {
     position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: min(360px, 90vw);
-    background: var(--bg);
-    border-left: 1px solid var(--border);
-    z-index: 101;
-    padding: 1rem;
+    top: 4.6rem;
+    right: max(0.75rem, calc((100vw - var(--page-max)) / 2 + var(--gutter)));
+    width: min(280px, calc(100vw - 1.5rem));
+    max-height: calc(100vh - 6rem);
     overflow-y: auto;
-  }
-  .panel__head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .panel__head h2 {
-    margin: 0;
-    font-size: 1.1rem;
-  }
-  .x {
-    border: none;
-    background: none;
-    font-size: 1.1rem;
-    cursor: pointer;
-    color: var(--fg);
-  }
-  fieldset {
+    background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 6px;
-    margin: 0.75rem 0;
+    border-radius: calc(var(--radius) + 6px);
+    z-index: 101;
+    padding: 0.9rem;
+    box-shadow: var(--shadow-md);
+    display: grid;
+    gap: 0.8rem;
   }
-  legend {
+  .group {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .label {
     color: var(--fg-muted);
-    font-size: 0.85em;
-    padding: 0 0.4rem;
+    font-size: var(--fs-caption);
   }
   .row {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.35rem;
+    padding: 0.2rem;
+    border-radius: var(--radius-pill);
+    background: var(--bg-soft);
   }
   .row button {
     flex: 1;
-    padding: 0.4rem;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    color: var(--fg);
-    border-radius: 6px;
+    padding: 0.45rem 0.4rem;
+    border: 0;
+    background: transparent;
+    color: var(--fg-secondary);
+    border-radius: var(--radius-pill);
     cursor: pointer;
     font: inherit;
   }
+  .row button:hover:not(:disabled) {
+    background: var(--hover);
+  }
+  .row button:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
   .row button.active {
     background: var(--accent-soft);
-    border-color: var(--accent);
     color: var(--accent);
+    font-weight: var(--fw-semibold);
   }
-  .check {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    cursor: pointer;
+  .stepper .value {
+    align-self: center;
+    width: 3rem;
+    text-align: center;
+    color: var(--fg);
+    font-variant-numeric: tabular-nums;
+    font: inherit;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  .stepper .value::-webkit-outer-spin-button,
+  .stepper .value::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
   }
   .font-select {
     width: 100%;

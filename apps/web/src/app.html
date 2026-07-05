@@ -10,7 +10,12 @@
         if (s) {
           const v = JSON.parse(s);
           document.documentElement.dataset.theme = v.theme === 'dark' ? 'dark' : 'light';
-          if (v.fontSize) document.documentElement.dataset.font = v.fontSize;
+          const px =
+            v.fontSize === 'sm' ? 15 : v.fontSize === 'lg' ? 20 : Number(v.fontSize) || 17;
+          document.documentElement.style.setProperty(
+            '--fs-base',
+            Math.min(22, Math.max(14, Math.round(px))) + 'px'
+          );
         }
       } catch (e) {}
     </script>

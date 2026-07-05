@@ -1,42 +1,24 @@
 <script lang="ts">
   import type { VerseItem } from '@synopsis/schema';
-  let {
-    item,
-    id,
-    highlighted = false,
-    onhover
-  }: {
-    item: VerseItem;
-    id: string;
-    highlighted?: boolean;
-    onhover?: (key: string | null) => void;
-  } = $props();
+  let { item, id }: { item: VerseItem; id: string } = $props();
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<span
-  class="verse"
-  class:highlighted
-  {id}
-  onmouseenter={() => onhover?.(id)}
-  onmouseleave={() => onhover?.(null)}
->
+<span class="verse" {id}>
   <sup class="vnum">{item.v}{item.suf}</sup>
   <span class="verse-text">{item.t}</span>
 </span>
 
 <style>
   .verse {
-    display: inline;
+    display: block;
+    padding-left: 1.6em;
+    text-indent: -1.6em;
+    margin-bottom: 0.3em;
     scroll-margin-top: 4rem;
   }
   .vnum {
-    color: var(--fg-muted);
+    color: var(--accent-subtle);
     font-weight: 600;
     margin-right: 0.15em;
-  }
-  .highlighted {
-    background: var(--highlight);
-    border-radius: 3px;
   }
 </style>

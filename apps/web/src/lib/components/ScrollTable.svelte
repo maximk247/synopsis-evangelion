@@ -25,24 +25,33 @@
     overflow-x: auto;
     max-width: 100%;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: calc(var(--radius) + 6px);
+    background: var(--card);
+    box-shadow: var(--shadow-sm);
   }
   table {
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     min-width: 100%;
     font-size: 0.9em;
   }
   th,
   td {
-    border: 1px solid var(--border);
-    padding: 0.35rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    padding: 0.55rem 0.7rem;
     text-align: left;
     white-space: nowrap;
     vertical-align: top;
   }
   th {
-    background: var(--bg-soft);
+    background: var(--surface);
     position: sticky;
     top: 0;
+    color: var(--fg-secondary);
+    font-size: var(--fs-caption);
+    font-weight: var(--fw-semibold);
+  }
+  tr:last-child td {
+    border-bottom: none;
   }
 </style>

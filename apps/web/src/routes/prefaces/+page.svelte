@@ -1,11 +1,14 @@
 <script lang="ts">
-  import { base } from '$app/paths';
+  import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
   import type { PageData } from './$types';
   let { data }: { data: PageData } = $props();
 </script>
 
 <svelte:head><title>Предисловия</title></svelte:head>
-<nav class="crumbs"><a href="{base}/">Содержание</a> › <b>Предисловия</b></nav>
+
+<Breadcrumbs parent={{ label: 'Материалы', path: '/materials' }} />
+
+<h1>Предисловия</h1>
 
 <div class="prose">
   {#each data.prefaces as pref, i (i)}
@@ -18,16 +21,19 @@
 </div>
 
 <style>
-  .crumbs {
-    font-size: 0.85em;
-    color: var(--fg-muted);
-    margin: 0.5rem 0 1rem;
-  }
   .prose {
+    padding: clamp(1rem, 3vw, 1.5rem);
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 8px);
+    background: color-mix(in srgb, var(--card) 76%, transparent);
+    box-shadow: var(--shadow-sm);
+  }
+  .prose p {
     max-width: 70ch;
   }
   .prose h2 {
     font-size: var(--fs-h3);
+    margin-top: 0;
   }
   .muted {
     color: var(--fg-muted);
