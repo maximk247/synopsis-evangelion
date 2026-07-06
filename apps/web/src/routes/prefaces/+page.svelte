@@ -22,6 +22,7 @@
 
 <style>
   .prose {
+    font-family: var(--reading-font);
     padding: clamp(1rem, 3vw, 1.5rem);
     border: 1px solid var(--border);
     border-radius: calc(var(--radius) + 8px);
