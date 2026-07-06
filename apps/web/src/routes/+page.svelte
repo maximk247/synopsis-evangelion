@@ -354,5 +354,10 @@
       gap: 0.5rem;
       padding: 0.55rem 0.8rem;
     }
+    .pitem__id {
+      justify-self: stretch;
+      min-width: 0;
+      text-align: center;
+    }
   }
 </style>
