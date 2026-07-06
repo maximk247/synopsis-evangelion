@@ -29,9 +29,6 @@
     background: color-mix(in srgb, var(--card) 76%, transparent);
     box-shadow: var(--shadow-sm);
   }
-  .prose p {
-    max-width: 70ch;
-  }
   .prose h2 {
     font-size: var(--fs-h3);
     margin-top: 0;

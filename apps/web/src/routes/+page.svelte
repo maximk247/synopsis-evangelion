@@ -134,7 +134,7 @@
     <div class="materials__links">
       <a href="{base}/prefaces">Предисловия</a>
       <span aria-hidden="true">·</span>
-      <a href="{base}/footnotes">Примечания</a>
+      <a href="{base}/footnotes">Источник</a>
     </div>
   </nav>
 </section>
