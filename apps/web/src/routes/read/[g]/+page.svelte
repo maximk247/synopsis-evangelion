@@ -16,7 +16,7 @@
       <a href="{base}/read/{g}" class:active={g === data.gospel}>{GOSPEL_LABELS[g].nom}</a>
     {/each}
   </div>
-  <Breadcrumbs parent={{ label: 'Материалы', path: '/materials' }} />
+  <Breadcrumbs parent={{ label: 'Материалы', path: '/materials' }} showTrail={false} />
 </div>
 
 <article class="reader verse-text">

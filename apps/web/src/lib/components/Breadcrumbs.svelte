@@ -2,10 +2,12 @@
   import { base } from '$app/paths';
   import { goto } from '$app/navigation';
   let {
-    parent
+    parent,
+    showTrail = true
   }: {
     /** Optional middle crumb; `path` is app-relative (e.g. "/materials" or "/#section-2"). */
     parent?: { label: string; path?: string } | undefined;
+    showTrail?: boolean;
   } = $props();
 
   // back button: to the nearest list — the parent when it is a link, else the contents
@@ -23,7 +25,7 @@
 
 <!-- Path to the current page (only when there is a real path); the back button is always there. -->
 <nav class="crumbs" aria-label="Хлебные крошки">
-  {#if parent}
+  {#if parent && showTrail}
     <a href="{base}/">Содержание</a>
     <span aria-hidden="true">›</span>
     {#if parent.path}
