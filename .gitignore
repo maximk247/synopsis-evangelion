@@ -30,3 +30,5 @@ __pycache__/
 # Generated web data
 apps/web/static/data/
 apps/web/src/lib/generated/
+
+.vercel

@@ -18,10 +18,17 @@ export const load: PageLoad = async ({ params, fetch }) => {
   const prevId = idx > 0 ? order[idx - 1]!.id : undefined;
   const nextId = idx >= 0 && idx < order.length - 1 ? order[idx + 1]!.id : undefined;
 
+  // container pericopes (51, 60, …) hold their text in sub-pericopes 51.1, 51.2, …
+  const children = order
+    .filter((p) => p.id.startsWith(`${pericope.id}.`))
+    .map((p) => ({ id: p.id, title: p.title }));
+
   return {
     pericope,
+    children,
     present: model.gospelsPresent(pericope),
     sectionTitle: model.sectionOf(pericope.id)?.title,
+    sectionId: model.sectionOf(pericope.id)?.id,
     prevId,
     nextId
   };

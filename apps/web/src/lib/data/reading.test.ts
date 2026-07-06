@@ -16,6 +16,20 @@ describe('buildReading', () => {
     expect(blocks.some((b) => b.kind === 'verse')).toBe(true);
   });
 
+  it('verses follow canonical order (chapter, then verse), not pericope order', () => {
+    const blocks = buildReading(model, 'lk');
+    let prev: { chapter: number; verse: number } | null = null;
+    for (const b of blocks) {
+      if (b.kind !== 'verse') continue;
+      if (prev) {
+        expect(
+          b.chapter > prev.chapter || (b.chapter === prev.chapter && b.verse >= prev.verse)
+        ).toBe(true);
+      }
+      prev = { chapter: b.chapter, verse: b.verse };
+    }
+  });
+
   it('deduplicates repeated verses (each chapter-verse-suf appears once)', () => {
     const blocks = buildReading(model, 'lk');
     const seen = new Set<string>();

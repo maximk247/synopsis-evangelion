@@ -19,9 +19,48 @@ export interface SynopsisModel {
   resolveRef(ref: ParsedRef): { id: string; gospel: GospelKey } | null;
 }
 
+/** Book-internal markers like "(НП)" (Нагорная Проповедь) are noise for the reader. */
+function stripMarkers(text: string): string {
+  return text.replace(/\(НП\)\s*/gu, '');
+}
+
+/**
+ * Printed cross-references the parser captured as note lines: "(ранее 13:10–17;",
+ * "см.Мф.18:10–14; п.88.1)", "19:11–28; п.128)". They may be split across several
+ * lines, so we also drop lines that consist of reference tokens only.
+ */
+const REF_TOKEN = String.raw`(?:(?:Мф|Мк|Лк|Ин)?\s*\.?\s*\d+(?::\d+)?(?:[–—-]\d+(?::\d+)?)?|п\.?\s*\d+(?:\.\d+)?[а-яё]?|гл\.?\s*\d+)`;
+const REF_NOTE_PATTERNS = [
+  /^\(?\s*(ранее|далее)\b/iu,
+  /^\(?\s*см\s*\./iu,
+  new RegExp(String.raw`^\(?\s*${REF_TOKEN}(?:\s*[;,]\s*${REF_TOKEN})*\s*[);,.]*$`, 'iu')
+];
+
+function isRefNote(text: string): boolean {
+  return REF_NOTE_PATTERNS.some((re) => re.test(text.trim()));
+}
+
 /** Build derived indexes from already-parsed data. Pure (no I/O). */
 export function buildModel(data: unknown): SynopsisModel {
   const raw = parseSynopsis(data);
+
+  for (const p of raw.pericopes) {
+    // source sometimes glues place and year together: "Иерихон30 г"
+    if (p.place) p.place = p.place.replace(/([а-яё.])(\d)/giu, '$1 $2');
+    for (const g of GOSPEL_KEYS) {
+      for (const seg of p.columns[g]?.segments ?? []) {
+        seg.items = seg.items.filter((item) => {
+          if (isVerse(item)) {
+            item.t = stripMarkers(item.t);
+            return true;
+          }
+          item.note = stripMarkers(item.note).trim();
+          return item.note.length > 0 && !isRefNote(item.note);
+        });
+      }
+    }
+    if (p.extra) for (const v of p.extra.items) v.t = stripMarkers(v.t);
+  }
 
   const byId = new Map<string, Pericope>();
   for (const p of raw.pericopes) byId.set(p.id, p);

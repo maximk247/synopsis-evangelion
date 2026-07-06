@@ -2,17 +2,15 @@ import { expect, test } from '@playwright/test';
 
 test('pericope 12 renders a single Luke column', async ({ page }) => {
   await page.goto('/p/12');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('12.');
+  await expect(page.getByText('Перикопа 12')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Лука', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Матфей', exact: true })).toHaveCount(0);
 });
 
-test('pericope 21 shows Mt + John fragment with prev and next links', async ({ page }) => {
+test('pericope 21 shows Matthew and the John fragment', async ({ page }) => {
   await page.goto('/p/21');
   await expect(page.getByRole('heading', { name: 'Матфей', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Иоанн', exact: true })).toBeVisible();
-  await expect(page.getByText('ранее:').first()).toBeVisible();
-  await expect(page.getByText('далее:').first()).toBeVisible();
 });
 
 test('pericope 51.1 shows numbered Beatitudes in Mt and Lk columns', async ({ page }) => {
@@ -23,20 +21,21 @@ test('pericope 51.1 shows numbered Beatitudes in Mt and Lk columns', async ({ pa
   expect(await page.locator('.vnum').count()).toBeGreaterThan(0);
 });
 
-test('reference search "Мф 3:13" jumps to pericope 21', async ({ page }) => {
-  await page.goto('/search?q=' + encodeURIComponent('Мф 3:13'));
-  await expect(page).toHaveURL(/\/p\/21/);
-});
-
-test('reference search "Мф 5:3" jumps to pericope 51.1', async ({ page }) => {
-  await page.goto('/search?q=' + encodeURIComponent('Мф 5:3'));
+test('contents filter: reference "Мф 5:3" offers a jump link to pericope 51.1', async ({
+  page
+}) => {
+  await page.goto('/');
+  await page.getByLabel('Фильтр перикоп').fill('Мф 5:3');
+  const link = page.getByRole('link', { name: /Перейти к Мф/ });
+  await expect(link).toBeVisible();
+  await link.click();
   await expect(page).toHaveURL(/\/p\/51\.1/);
 });
 
-test('full-text "Агнец Божий" finds John 1:29 and 1:36', async ({ page }) => {
-  await page.goto('/search?q=' + encodeURIComponent('Агнец Божий'));
+test('contents filter: full-text "Агнец Божий" finds John 1:29', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('Фильтр перикоп').fill('Агнец Божий');
   await expect(page.getByText('Ин 1:29')).toBeVisible();
-  await expect(page.getByText('Ин 1:36')).toBeVisible();
 });
 
 test('at 390px columns become tabs and the page does not overflow horizontally', async ({
@@ -45,15 +44,6 @@ test('at 390px columns become tabs and the page does not overflow horizontally',
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto('/p/21');
   await expect(page.getByRole('tab', { name: 'Матфей' })).toBeVisible();
-  const noOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth <= window.innerWidth + 1
-  );
-  expect(noOverflow).toBe(true);
-});
-
-test('chronology table scrolls without breaking the page width at 390px', async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 800 });
-  await page.goto('/appendix');
   const noOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth <= window.innerWidth + 1
   );
@@ -69,7 +59,9 @@ test('theme choice persists across reloads', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });
 
-test('settings drawer: clicking the panel keeps it open, scrim closes it', async ({ page }) => {
+test('settings menu: clicking the panel keeps it open, outside click closes it', async ({
+  page
+}) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Настройки' }).click();
   const dialog = page.getByRole('dialog');

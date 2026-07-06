@@ -2,16 +2,20 @@
 <html lang="ru" data-theme="light">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%sveltekit.assets%/favicon.png" />
+    <link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script>
       try {
         const s = localStorage.getItem('synopsis:settings');
         if (s) {
           const v = JSON.parse(s);
-          if (v.theme) document.documentElement.dataset.theme = v.theme;
-          if (v.fontSize) document.documentElement.dataset.font = v.fontSize;
-          document.documentElement.dataset.serif = v.serif === false ? 'off' : 'on';
+          document.documentElement.dataset.theme = v.theme === 'dark' ? 'dark' : 'light';
+          const px =
+            v.fontSize === 'sm' ? 15 : v.fontSize === 'lg' ? 20 : Number(v.fontSize) || 17;
+          document.documentElement.style.setProperty(
+            '--fs-base',
+            Math.min(22, Math.max(14, Math.round(px))) + 'px'
+          );
         }
       } catch (e) {}
     </script>

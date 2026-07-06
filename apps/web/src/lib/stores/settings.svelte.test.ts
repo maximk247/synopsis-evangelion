@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { SettingsStore } from './settings.svelte.js';
+import { SettingsStore, FONT_SIZE_MAX, FONT_SIZE_MIN } from './settings.svelte.js';
 
 function installStorage() {
   const store = new Map<string, string>();
@@ -14,37 +14,52 @@ function installStorage() {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('SettingsStore', () => {
-  it('defaults to light/md/serif/highlight', () => {
+  it('defaults to light/17px/calibri', () => {
     installStorage();
     const s = new SettingsStore();
     expect(s.theme).toBe('light');
-    expect(s.fontSize).toBe('md');
-    expect(s.serif).toBe(true);
-    expect(s.highlightParallels).toBe(true);
+    expect(s.fontSize).toBe(17);
+    expect(s.readingFont).toBe('calibri');
   });
 
   it('persists changes under synopsis:settings', () => {
     const store = installStorage();
     const s = new SettingsStore();
     s.setTheme('dark');
-    s.setFontSize('lg');
-    s.setSerif(false);
+    s.stepFontSize(2);
+    s.setReadingFont('georgia');
     expect(JSON.parse(store.get('synopsis:settings')!)).toEqual({
       theme: 'dark',
-      fontSize: 'lg',
-      serif: false,
-      highlightParallels: true
+      fontSize: 19,
+      readingFont: 'georgia'
     });
   });
 
-  it('rehydrates persisted settings on construction', () => {
+  it('clamps font size steps to the allowed range', () => {
+    installStorage();
+    const s = new SettingsStore();
+    s.stepFontSize(100);
+    expect(s.fontSize).toBe(FONT_SIZE_MAX);
+    s.stepFontSize(-100);
+    expect(s.fontSize).toBe(FONT_SIZE_MIN);
+  });
+
+  it('migrates legacy sepia theme and preset font sizes', () => {
     const store = installStorage();
     store.set(
       'synopsis:settings',
-      JSON.stringify({ theme: 'sepia', fontSize: 'sm', serif: false, highlightParallels: false })
+      JSON.stringify({ theme: 'sepia', fontSize: 'sm', serif: false })
     );
     const s = new SettingsStore();
-    expect(s.theme).toBe('sepia');
-    expect(s.highlightParallels).toBe(false);
+    expect(s.theme).toBe('light');
+    expect(s.fontSize).toBe(15);
+    expect(s.readingFont).toBe('calibri');
+  });
+
+  it('rejects unknown reading font and keeps default', () => {
+    const store = installStorage();
+    store.set('synopsis:settings', JSON.stringify({ readingFont: 'bogus' }));
+    const s = new SettingsStore();
+    expect(s.readingFont).toBe('calibri');
   });
 });
