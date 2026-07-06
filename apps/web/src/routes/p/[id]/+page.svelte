@@ -97,9 +97,9 @@
 {/if}
 
 {#if p.extra}
-  <section class="extra">
-    <h2>{p.extra.source}</h2>
-    <div class="flow">
+  <section class="extra" aria-label={p.extra.source}>
+    <h2 class="extra__head">{p.extra.source}</h2>
+    <div class="extra__body">
       {#each p.extra.items as v, i (i)}
         <span class="everse verse-text"><sup class="vnum">{v.v}{v.suf}</sup>{v.t}</span>
       {/each}
@@ -187,12 +187,28 @@
     font-size: var(--fs-ui-sm);
     font-weight: var(--fw-medium);
   }
+  /* non-gospel passages (1Кор., Деян.) — a card matching the gospel columns */
   .extra {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    border: 1px solid var(--border);
-    border-radius: calc(var(--radius) + 4px);
-    background: color-mix(in srgb, var(--card) 72%, transparent);
+    margin-top: 1rem;
+    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+    border-radius: calc(var(--radius) + 6px);
+    background: color-mix(in srgb, var(--card) 76%, transparent);
+    box-shadow: var(--shadow-sm);
+    overflow: clip;
+  }
+  .extra__head {
+    font-size: 1rem;
+    margin: 0;
+    padding: 0.75rem 0.9rem 0.65rem;
+    border-bottom: 2px solid var(--accent-soft);
+    font-family: var(--font-serif);
+    color: var(--accent);
+    background: var(--card);
+  }
+  .extra__body {
+    padding: 0.85rem 0.9rem;
+    font-size: var(--fs-reading);
+    line-height: var(--lh-reading);
   }
   .vnum {
     display: inline-block;
