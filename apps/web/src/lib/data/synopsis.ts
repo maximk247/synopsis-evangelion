@@ -26,25 +26,48 @@ function stripMarkers(text: string): string {
 
 /**
  * Printed cross-references the parser captured as note lines: "(ранее 13:10–17;",
- * "см.Мф.18:10–14; п.88.1)", "19:11–28; п.128)". They may be split across several
- * lines, so we also drop lines that consist of reference tokens only.
+ * "см.Мф.18:10–14; п.88.1)", "п.149)22:54а;", "М.к". They may be split across
+ * several lines, so we also drop lines that consist of reference tokens only.
+ * NB: no `\b` here — JS word boundaries are ASCII-only and never fire after cyrillic.
  */
-const REF_TOKEN = String.raw`(?:(?:Мф|Мк|Лк|Ин)?\s*\.?\s*\d+(?::\d+)?(?:[–—-]\d+(?::\d+)?)?|п\.?\s*\d+(?:\.\d+)?[а-яё]?|гл\.?\s*\d+)`;
+const REF_TOKEN = String.raw`(?:(?:Мф|Мк|Лк|Ин)?\s*\.?\s*\d+(?::\d+[а-яё]?)?(?:[–—-]\d+(?::\d+[а-яё]?)?)?[а-яё]?|п\.?\s*\d+(?:\.\d+)?[а-яё]?|гл\.?\s*\d+)`;
 const REF_NOTE_PATTERNS = [
-  /^\(?\s*(ранее|далее)\b/iu,
+  /^\(?\s*(ранее|далее)(?![а-яё])/iu,
   /^\(?\s*см\s*\./iu,
-  new RegExp(String.raw`^\(?\s*${REF_TOKEN}(?:\s*[;,]\s*${REF_TOKEN})*\s*[);,.]*$`, 'iu')
+  // a whole line of tokens, each optionally closed with ")" and separated by ";" or ","
+  new RegExp(String.raw`^\(?\s*(?:${REF_TOKEN}\)?[;,]?\s*)+$`, 'iu'),
+  // stray gospel-abbreviation fragments like "М.к"
+  /^[а-яё]{1,2}\s*\.\s*[а-яё]{1,2}\.?$/iu
 ];
 
 function isRefNote(text: string): boolean {
   return REF_NOTE_PATTERNS.some((re) => re.test(text.trim()));
 }
 
+/** Hand-checked titles the extraction garbled beyond generic fixes. */
+const TITLE_PATCHES: Record<string, string> = {
+  '156':
+    'Последняя попытка Пилата отпустить Господа («се, Человек», «се, Царь ваш»); предание Господа на распятие'
+};
+
 /** Build derived indexes from already-parsed data. Pure (no I/O). */
 export function buildModel(data: unknown): SynopsisModel {
   const raw = parseSynopsis(data);
 
   for (const p of raw.pericopes) {
+    // "Цар ь" — the extraction sometimes detaches the soft sign
+    p.title = TITLE_PATCHES[p.id] ?? p.title.replace(/ ь/gu, 'ь');
+    // a place line wrapped in print: its tail lands in headnote ("…с Четверга 6" + "апреля…30 г")
+    if (p.headnote && /^[а-яё0-9]/u.test(p.headnote.trim())) {
+      p.place = [p.place, p.headnote.trim()].filter(Boolean).join(' ');
+      delete p.headnote;
+    }
+    // title subtitle mistaken for place, real place pushed to headnote (п. 82)
+    if (p.headnote && /\d+\s*г\.?$/u.test(p.headnote.trim()) && p.place && !/\d/.test(p.place)) {
+      p.title = `${p.title.replace(/\.$/u, '')}. ${p.place}`;
+      p.place = p.headnote.trim();
+      delete p.headnote;
+    }
     // source sometimes glues place and year together: "Иерихон30 г"
     if (p.place) p.place = p.place.replace(/([а-яё.])(\d)/giu, '$1 $2');
     for (const g of GOSPEL_KEYS) {
