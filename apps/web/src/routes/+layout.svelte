@@ -22,7 +22,6 @@
         : path.startsWith('/materials') ||
             path.startsWith('/prefaces') ||
             path.startsWith('/footnotes') ||
-            path.startsWith('/appendix') ||
             path.startsWith('/read/')
           ? 'materials'
           : null

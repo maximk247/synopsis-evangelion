@@ -135,8 +135,6 @@
       <a href="{base}/prefaces">Предисловия</a>
       <span aria-hidden="true">·</span>
       <a href="{base}/footnotes">Примечания</a>
-      <span aria-hidden="true">·</span>
-      <a href="{base}/appendix">Хронология</a>
     </div>
   </nav>
 </section>
@@ -348,13 +346,10 @@
   }
 
   @media (max-width: 760px) {
-    .pitem {
-      grid-template-columns: minmax(0, 1fr) auto;
+    .pitem__link {
+      grid-template-columns: 2.1rem minmax(0, 1fr) auto;
       gap: 0.5rem;
       padding: 0.55rem 0.8rem;
-    }
-    .pitem__main {
-      grid-template-columns: 2.1rem minmax(0, 1fr);
     }
   }
 </style>

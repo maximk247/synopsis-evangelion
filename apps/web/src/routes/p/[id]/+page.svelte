@@ -101,7 +101,7 @@
     <h2>{p.extra.source}</h2>
     <div class="flow">
       {#each p.extra.items as v, i (i)}
-        <span class="everse verse-text"><sup class="vnum">{v.v}{v.suf}</sup> {v.t}</span>
+        <span class="everse verse-text"><sup class="vnum">{v.v}{v.suf}</sup>{v.t}</span>
       {/each}
     </div>
   </section>
@@ -195,13 +195,19 @@
     background: color-mix(in srgb, var(--card) 72%, transparent);
   }
   .vnum {
+    display: inline-block;
+    font-size: 0.75em;
+    width: calc(1.35em / 0.75);
+    margin-right: calc(0.45em / 0.75);
+    text-align: center;
+    text-indent: 0;
     color: var(--accent-subtle);
     font-weight: 600;
   }
   .everse {
     display: block;
-    padding-left: 1.6em;
-    text-indent: -1.6em;
+    padding-left: 1.8em;
+    text-indent: -1.8em;
     margin-bottom: 0.3em;
   }
   :global(.deep-target) {

@@ -78,8 +78,8 @@
     color: var(--fg);
   }
   .back svg {
-    width: 1.4rem;
-    height: 1.4rem;
+    width: 1.25rem;
+    height: 1.25rem;
   }
   .back:hover {
     background: var(--hover);
