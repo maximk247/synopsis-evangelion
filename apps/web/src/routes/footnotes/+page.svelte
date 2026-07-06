@@ -1,18 +1,23 @@
 <script lang="ts">
   import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
-  import type { PageData } from './$types';
-  let { data }: { data: PageData } = $props();
 </script>
 
-<svelte:head><title>Примечания</title></svelte:head>
+<svelte:head><title>Источник</title></svelte:head>
 
 <Breadcrumbs parent={{ label: 'Материалы', path: '/materials' }} />
 
-<h1>Примечания</h1>
+<h1>Источник</h1>
 
 <div class="prose">
-  {#each data.footnotes as f (f.n)}<p><b>{f.n}.</b> {f.text}</p>{/each}
-  {#if data.footnotes.length === 0}<p class="muted">Примечания не извлечены.</p>{/if}
+  <p>
+    Издание «Евангельский синопсис» (сост. свящ. А. Емельянов) с полным текстом
+    примечаний опубликовано на «Азбуке веры»:
+  </p>
+  <p>
+    <a href="https://azbyka.ru/otechnik/Biblia/evangelskij-sinopsis/" target="_blank" rel="noopener"
+      >azbyka.ru/otechnik/Biblia/evangelskij-sinopsis</a
+    >
+  </p>
 </div>
 
 <style>
@@ -25,13 +30,9 @@
     box-shadow: var(--shadow-sm);
   }
   .prose p {
-    max-width: 70ch;
     margin: 0;
   }
   .prose p + p {
     margin-top: 0.75rem;
-  }
-  .muted {
-    color: var(--fg-muted);
   }
 </style>

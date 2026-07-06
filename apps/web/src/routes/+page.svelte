@@ -2,6 +2,7 @@
   import { browser } from '$app/environment';
   import { base } from '$app/paths';
   import GospelPresence from '$lib/components/GospelPresence.svelte';
+  import ToTop from '$lib/components/ToTop.svelte';
   import { GOSPEL_LABELS } from '$lib/data/labels.js';
   import { loadSynopsis, type SynopsisModel } from '$lib/data/synopsis.js';
   import {
@@ -129,12 +130,14 @@
     {/if}
   {/if}
 
+  <ToTop />
+
   <nav class="materials" aria-label="Справочные материалы">
     <h2 class="materials__title">Справочные материалы</h2>
     <div class="materials__links">
       <a href="{base}/prefaces">Предисловия</a>
       <span aria-hidden="true">·</span>
-      <a href="{base}/footnotes">Примечания</a>
+      <a href="{base}/footnotes">Источник</a>
     </div>
   </nav>
 </section>
