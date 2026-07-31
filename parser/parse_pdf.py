@@ -378,6 +378,12 @@ EXTRA_BLOCK_RE = re.compile(r"^\s*(1\s*Кор|Деян)\.?\s*(\d+)\s*$")
 # алиасы для опечаток в указателе/ссылках
 PERICOPE_ALIASES = {"99.9": "99.8"}
 
+# Стихи, у которых в вёрстке потерян номер: (перикопа, колонка, глава, строка) -> номер.
+# Строка задаётся точно так, как она идёт в PDF, - с неё начинается стих.
+MISSING_VERSE_NUMBERS = {
+    ("51.11", "lk", 11, "и прости нам грехи наши,"): 4,
+}
+
 
 class Zone:
     def __init__(self, x0, gospel_key, chapter):
@@ -651,14 +657,13 @@ class PericopeBuilder:
                     # начинаем последовательность или продолжаем по возрастанию
                     ok = True
             if ok:
-                z.flush()
-                z.cur_verse = {"v": n, "suf": suf,
-                               "t": tokens_text(toks[1:])}
-                z.cur_seg["items"].append(z.cur_verse)
-                exp.discard((ch, n))
-                self.last_v[z.gospel] = (ch, n, suf)
-                self.verse_starts.append(
-                    (gtop, z.gospel, ch, f"{n}{suf}"))
+                self.start_verse(z, ch, n, suf, tokens_text(toks[1:]), gtop)
+                return
+        if z.gospel and z.cur_seg:
+            chapter = z.cur_seg["chapter"]
+            forced = MISSING_VERSE_NUMBERS.get((self.id, z.gospel, chapter, text))
+            if forced is not None:
+                self.start_verse(z, chapter, forced, "", text, gtop)
                 return
         # заметка-ссылка или продолжение текста
         if z.cur_verse is None or (text.startswith("(") and
@@ -669,6 +674,15 @@ class PericopeBuilder:
                 z.flush_note()
         else:
             z.cur_verse["t"] = join_text(z.cur_verse["t"], text)
+
+    def start_verse(self, z, ch, n, suf, text, gtop):
+        """Открыть новый стих в зоне: сам стих, ожидания указателя, выравнивание."""
+        z.flush()
+        z.cur_verse = {"v": n, "suf": suf, "t": text}
+        z.cur_seg["items"].append(z.cur_verse)
+        self.expected.get(z.gospel, set()).discard((ch, n))
+        self.last_v[z.gospel] = (ch, n, suf)
+        self.verse_starts.append((gtop, z.gospel, ch, f"{n}{suf}"))
 
     def feed_extra(self, text):
         toks = text.split(" ", 1)

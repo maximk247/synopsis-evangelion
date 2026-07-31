@@ -28,6 +28,17 @@ def test_pericope_21_has_four_columns_with_links(parsed):
     assert any(seg["next"] for seg in lk_segs)
 
 
+def test_pericope_51_11_lord_prayer_luke_verse_4(parsed):
+    # В вёрстке PDF у колонки Лк.11 потерян номер стиха 4 - восстанавливаем
+    p = _by_id(parsed, "51.11")
+    assert p is not None
+    seg = next(s for s in p["columns"]["lk"]["segments"] if s["chapter"] == 11)
+    verses = {it["v"]: it["t"] for it in seg["items"] if "v" in it}
+    assert sorted(verses) == [2, 3, 4]
+    assert verses[3] == "хлеб наш насущный подавай нам на каждый день;"
+    assert verses[4].startswith("и прости нам грехи наши,")
+
+
 def test_pericope_51_1_beatitudes_numbered(parsed):
     p = _by_id(parsed, "51.1")
     assert p is not None
