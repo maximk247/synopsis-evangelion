@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { chapterNumbers, getChapter, loadBook, neighbourChapters } from './bible.js';
+import { chapterNumbers, getChapter, loadBook, neighbourChapters, splitRuns } from './bible.js';
 
 const book = {
   '2': { '1': 'второй-первый', '10': 'второй-десятый', '3': 'второй-третий' },
@@ -36,6 +36,38 @@ describe('neighbourChapters', () => {
 
   it('gives null for an unknown chapter', () => {
     expect(neighbourChapters(book, 99)).toEqual({ prev: null, next: null });
+  });
+});
+
+describe('splitRuns', () => {
+  const verses = [1, 2, 3, 4, 5].map((verse) => ({ verse, text: `t${verse}` }));
+  const runs = (hl: number[]) =>
+    splitRuns(verses, new Set(hl)).map((r) => [r.hl, r.items.map((i) => i.verse)]);
+
+  it('merges neighbouring highlighted verses into one run', () => {
+    expect(runs([2, 3, 4])).toEqual([
+      [false, [1]],
+      [true, [2, 3, 4]],
+      [false, [5]]
+    ]);
+  });
+
+  it('keeps a gap in the highlight as separate runs', () => {
+    expect(runs([2, 4])).toEqual([
+      [false, [1]],
+      [true, [2]],
+      [false, [3]],
+      [true, [4]],
+      [false, [5]]
+    ]);
+  });
+
+  it('returns a single plain run when nothing is highlighted', () => {
+    expect(runs([])).toEqual([[false, [1, 2, 3, 4, 5]]]);
+  });
+
+  it('returns nothing for an empty chapter', () => {
+    expect(splitRuns([], new Set([1]))).toEqual([]);
   });
 });
 

@@ -6,6 +6,30 @@ export interface ChapterVerse {
   text: string;
 }
 
+/** Отрезок главы: подряд идущие стихи, одинаковые по подсветке. */
+export interface ChapterRun {
+  hl: boolean;
+  items: ChapterVerse[];
+}
+
+/**
+ * Режет главу на отрезки по подсветке, чтобы подряд идущие подсвеченные стихи
+ * рисовались одной сплошной полосой, а не блоком на каждый стих.
+ */
+export function splitRuns(
+  verses: ChapterVerse[],
+  highlighted: ReadonlySet<number>
+): ChapterRun[] {
+  const runs: ChapterRun[] = [];
+  for (const v of verses) {
+    const hl = highlighted.has(v.verse);
+    const last = runs[runs.length - 1];
+    if (last && last.hl === hl) last.items.push(v);
+    else runs.push({ hl, items: [v] });
+  }
+  return runs;
+}
+
 /** Номера глав книги по возрастанию. */
 export function chapterNumbers(book: BibleBook): number[] {
   return Object.keys(book)
