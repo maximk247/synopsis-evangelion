@@ -61,13 +61,21 @@ test('chapter heading opens the canonical context and links into the reading vie
   await expect(dialog.getByRole('heading', { name: 'Лука, глава 11' })).toBeVisible();
   // стих 1 в перикопу не входит — панель показывает главу целиком, а не выдержку
   await expect(dialog.getByText('научи нас молиться')).toBeVisible();
-  await expect(dialog.locator('.verse.hl')).toHaveCount(3);
+  await expect(dialog.locator('.hl .verse')).toHaveCount(3);
 
   await dialog.getByRole('button', { name: 'Следующая глава' }).click();
   await expect(dialog.getByRole('heading', { name: 'Лука, глава 12' })).toBeVisible();
-  await expect(dialog.locator('.verse.hl')).toHaveCount(0);
+  await expect(dialog.locator('.hl .verse')).toHaveCount(0);
+
+  // выбор главы сеткой, а не стрелками
+  await dialog.getByRole('button', { expanded: false }).click();
+  await dialog.locator('.picker .num', { hasText: /^24$/ }).click();
+  await expect(dialog.getByRole('heading', { name: 'Лука, глава 24' })).toBeVisible();
+  await expect(dialog.locator('.picker')).toHaveCount(0);
 
   await dialog.getByRole('button', { name: 'Предыдущая глава' }).click();
+  await dialog.getByRole('button', { expanded: false }).click();
+  await dialog.locator('.picker .num', { hasText: /^11$/ }).click();
   await dialog.getByRole('link', { name: 'Открыть в чтении' }).click();
   await expect(page).toHaveURL(/\/read\/lk#lk-11-2$/);
   await expect(page.locator('#lk-11-2')).toBeVisible();

@@ -1,7 +1,14 @@
 <script lang="ts">
   import { base } from '$app/paths';
   import type { BibleBook, GospelKey } from '@synopsis/schema';
-  import { getChapter, loadBook, neighbourChapters } from '$lib/data/bible.js';
+  import {
+    chapterNumbers,
+    getChapter,
+    loadBook,
+    neighbourChapters,
+    splitRuns,
+    type ChapterVerse
+  } from '$lib/data/bible.js';
   import { verseKey } from '$lib/data/alignment.js';
   import { GOSPEL_LABELS } from '$lib/data/labels.js';
   import { contextPanel } from '$lib/stores/context-panel.svelte.js';
@@ -21,8 +28,16 @@
     book && target ? neighbourChapters(book, target.chapter) : { prev: null, next: null }
   );
   const highlight = $derived(contextPanel.highlight);
-  const highlighted = $derived(new Set(highlight));
+  const runs = $derived(splitRuns(verses, new Set(highlight)));
   const anchor = $derived(highlight[0] ?? verses[0]?.verse ?? 1);
+  const chapters = $derived(book ? chapterNumbers(book) : []);
+
+  let pickerOpen = $state(false);
+  // выбор главы закрывается вместе с панелью и при уходе на другую главу
+  $effect(() => {
+    void target?.chapter;
+    pickerOpen = false;
+  });
 
   $effect(() => {
     const g = gospel;
@@ -60,7 +75,9 @@
   function onKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
       e.preventDefault();
-      contextPanel.close();
+      // первый Esc убирает сетку глав, второй закрывает панель
+      if (pickerOpen) pickerOpen = false;
+      else contextPanel.close();
       return;
     }
     if (e.key === 'ArrowLeft' && nav.prev !== null) {
@@ -109,7 +126,18 @@
         disabled={nav.prev === null}
         onclick={() => nav.prev !== null && contextPanel.goToChapter(nav.prev)}>‹</button
       >
-      <h2 class="title">{GOSPEL_LABELS[target.gospel].nom}, глава {target.chapter}</h2>
+      <h2 class="title">
+        <button
+          class="pick"
+          aria-haspopup="true"
+          aria-expanded={pickerOpen}
+          onclick={() => (pickerOpen = !pickerOpen)}
+          >{GOSPEL_LABELS[target.gospel].nom}, глава {target.chapter}<span
+            class="caret"
+            aria-hidden="true">▾</span
+          ></button
+        >
+      </h2>
       <button
         class="step"
         aria-label="Следующая глава"
@@ -120,16 +148,38 @@
       >
     </header>
 
+    {#if pickerOpen}
+      <div class="picker" aria-label="Выбор главы">
+        {#each chapters as n (n)}
+          <button
+            class="num"
+            class:current={n === target.chapter}
+            aria-current={n === target.chapter ? 'true' : undefined}
+            onclick={() => contextPanel.goToChapter(n)}>{n}</button
+          >
+        {/each}
+      </div>
+    {/if}
+
+    {#snippet verse(v: ChapterVerse)}
+      <span class="verse" data-v={v.verse}><sup class="vnum">{v.verse}</sup>{v.text}</span>
+    {/snippet}
+
     <div class="body verse-text" bind:this={body}>
       {#if failed}
         <p class="state">Не удалось загрузить текст. Проверьте соединение и попробуйте снова.</p>
       {:else if verses.length === 0}
         <p class="state">Загрузка…</p>
       {:else}
-        {#each verses as v (v.verse)}
-          <span class="verse" class:hl={highlighted.has(v.verse)} data-v={v.verse}
-            ><sup class="vnum">{v.verse}</sup>{v.text}</span
-          >
+        <!-- подряд идущие подсвеченные стихи рисуются одной полосой, а не блоком на каждый -->
+        {#each runs as run, i (i)}
+          {#if run.hl}
+            <div class="hl">
+              {#each run.items as v (v.verse)}{@render verse(v)}{/each}
+            </div>
+          {:else}
+            {#each run.items as v (v.verse)}{@render verse(v)}{/each}
+          {/if}
         {/each}
       {/if}
     </div>
@@ -157,8 +207,8 @@
     right: max(0.75rem, calc((100vw - var(--page-max)) / 2 + var(--gutter)));
     width: min(460px, calc(100vw - 1.5rem));
     max-height: calc(100vh - 6rem);
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    display: flex;
+    flex-direction: column;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: calc(var(--radius) + 6px);
@@ -166,6 +216,7 @@
     overflow: clip;
   }
   .head {
+    flex: none;
     display: flex;
     align-items: center;
     gap: 0.25rem;
@@ -174,11 +225,30 @@
   }
   .title {
     flex: 1;
+    min-width: 0;
     margin: 0;
     text-align: center;
     font-size: var(--fs-h3);
-    font-family: var(--font-serif);
+  }
+  .pick {
+    max-width: 100%;
+    padding: 0.15rem 0.5rem;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
     color: var(--accent);
+    font: inherit;
+    font-family: var(--font-serif);
+    cursor: pointer;
+  }
+  .pick:hover,
+  .pick[aria-expanded='true'] {
+    background: var(--accent-soft);
+  }
+  .caret {
+    margin-left: 0.35rem;
+    font-size: 0.7em;
+    vertical-align: 0.15em;
   }
   .step {
     flex: none;
@@ -203,7 +273,40 @@
   .close {
     margin-left: 0.35rem;
   }
+  .picker {
+    flex: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(2.4rem, 1fr));
+    gap: 0.3rem;
+    max-height: 40vh;
+    overflow-y: auto;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-soft);
+  }
+  .num {
+    padding: 0.4rem 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    color: var(--fg-secondary);
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+  .num:hover {
+    border-color: var(--border-strong);
+    color: var(--accent);
+  }
+  .num.current {
+    background: var(--accent-soft);
+    border-color: var(--accent-subtle);
+    color: var(--accent);
+    font-weight: var(--fw-semibold);
+  }
   .body {
+    flex: 1;
+    min-height: 0;
     overflow-y: auto;
     padding: 0.85rem 1rem;
     font-size: var(--fs-reading);
@@ -221,10 +324,14 @@
     margin-bottom: 0.3em;
     scroll-margin: 2rem;
   }
-  .verse.hl {
+  .hl {
     background: var(--active-verse);
     border-radius: var(--radius-sm);
-    box-shadow: 0 0 0 0.25em var(--active-verse);
+    padding: 0.3em 0.5em;
+    margin: 0.15em -0.5em 0.45em;
+  }
+  .hl .verse:last-child {
+    margin-bottom: 0;
   }
   .vnum {
     display: inline-block;
@@ -237,6 +344,7 @@
     font-weight: 600;
   }
   .foot {
+    flex: none;
     padding: 0.55rem 1rem;
     border-top: 1px solid var(--border);
     font-size: var(--fs-ui-sm);
