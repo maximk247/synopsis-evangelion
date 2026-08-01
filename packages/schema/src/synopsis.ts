@@ -11,6 +11,10 @@ export const GOSPEL_LABELS: Record<GospelKey, { abbr: string; nom: string; gen: 
   jn: { abbr: 'Ин', nom: 'Иоанн', gen: 'Иоанна' },
 };
 
+/** Канонический текст книги: глава -> стих -> текст. Оба ключа — строки. */
+export const BibleBook = z.record(z.string(), z.record(z.string(), z.string()));
+export type BibleBook = z.infer<typeof BibleBook>;
+
 /** Ссылка «ранее/далее» на сегменте колонки. */
 export const RefLink = z.object({
   ref: z.string(), // "3:21–22"

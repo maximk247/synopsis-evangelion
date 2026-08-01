@@ -3,6 +3,7 @@
   import Breadcrumbs from '$lib/components/Breadcrumbs.svelte';
   import ToTop from '$lib/components/ToTop.svelte';
   import { GOSPELS, GOSPEL_LABELS, gospelHeading } from '$lib/data/labels.js';
+  import { verseKey } from '$lib/data/alignment.js';
   import type { PageData } from './$types';
 
   let { data }: { data: PageData } = $props();
@@ -26,7 +27,9 @@
     {:else if b.kind === 'chapter'}
       <h3 class="chapter">Глава {b.chapter}</h3>
     {:else}
-      <span class="verse"><sup class="vnum">{b.verse}{b.suf}</sup>{b.text}</span>
+      <span class="verse" id={b.anchor ? verseKey(data.gospel, b.chapter, b.verse) : undefined}
+        ><sup class="vnum">{b.verse}{b.suf}</sup>{b.text}</span
+      >
     {/if}
   {/each}
 </article>
@@ -116,6 +119,12 @@
     padding-left: 1.8em;
     text-indent: -1.8em;
     margin-bottom: 0.3em;
+    scroll-margin-top: 5rem;
+  }
+  .verse:target {
+    background: var(--active-verse);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 0 0 0.25em var(--active-verse);
   }
 
   @media (max-width: 760px) {

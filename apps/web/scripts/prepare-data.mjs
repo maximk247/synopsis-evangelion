@@ -8,8 +8,10 @@ const src = resolve(repoRoot, 'data/synopsis.json');
 const canonicalDir = resolve(repoRoot, 'data/canonical');
 
 const staticDir = resolve(here, '../static/data');
+const bibleDir = resolve(staticDir, 'bible');
 const genDir = resolve(here, '../src/lib/generated');
 mkdirSync(staticDir, { recursive: true });
+mkdirSync(bibleDir, { recursive: true });
 mkdirSync(genDir, { recursive: true });
 
 const data = JSON.parse(readFileSync(src, 'utf8'));
@@ -163,6 +165,17 @@ for (const g of GOSPELS) {
     continue;
   }
   const canonical = JSON.parse(readFileSync(path, 'utf8'));
+  // подмешиваем пропущенные в дампе стихи, чтобы патч жил в одном месте
+  for (const [key, text] of Object.entries(CANONICAL_PATCHES)) {
+    const [pg, ch, v] = key.split(':');
+    if (pg !== g) continue;
+    canonical[ch] ??= {};
+    canonical[ch][v] = text;
+  }
+
+  // 1a) тот же текст отдаём панели контекста: /data/bible/{g}.json
+  writeFileSync(resolve(bibleDir, `${g}.json`), JSON.stringify(canonical), 'utf8');
+
   for (const p of data.pericopes) {
     const col = p.columns[g];
     if (!col) continue;
@@ -174,9 +187,7 @@ for (const g of GOSPELS) {
           kept += 1;
           continue;
         }
-        const text =
-          canonical[String(seg.chapter)]?.[String(item.v)] ??
-          CANONICAL_PATCHES[`${g}:${seg.chapter}:${item.v}`];
+        const text = canonical[String(seg.chapter)]?.[String(item.v)];
         if (text === undefined) {
           missing += 1;
           console.warn(`prepare-data: no canonical verse for ${g} ${seg.chapter}:${item.v}`);

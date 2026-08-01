@@ -50,6 +50,29 @@ test('at 390px columns become tabs and the page does not overflow horizontally',
   expect(noOverflow).toBe(true);
 });
 
+test('chapter heading opens the canonical context and links into the reading view', async ({
+  page
+}) => {
+  await page.goto('/p/51.11');
+  // кликаем по тексту сегмента, а не по подписи главы — работать должна вся область
+  await page.getByRole('region', { name: 'Лука' }).getByText('хлеб наш насущный').click();
+
+  const dialog = page.getByRole('dialog', { name: 'Текст главы' });
+  await expect(dialog.getByRole('heading', { name: 'Лука, глава 11' })).toBeVisible();
+  // стих 1 в перикопу не входит — панель показывает главу целиком, а не выдержку
+  await expect(dialog.getByText('научи нас молиться')).toBeVisible();
+  await expect(dialog.locator('.verse.hl')).toHaveCount(3);
+
+  await dialog.getByRole('button', { name: 'Следующая глава' }).click();
+  await expect(dialog.getByRole('heading', { name: 'Лука, глава 12' })).toBeVisible();
+  await expect(dialog.locator('.verse.hl')).toHaveCount(0);
+
+  await dialog.getByRole('button', { name: 'Предыдущая глава' }).click();
+  await dialog.getByRole('link', { name: 'Открыть в чтении' }).click();
+  await expect(page).toHaveURL(/\/read\/lk#lk-11-2$/);
+  await expect(page.locator('#lk-11-2')).toBeVisible();
+});
+
 test('theme choice persists across reloads', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Настройки' }).click();

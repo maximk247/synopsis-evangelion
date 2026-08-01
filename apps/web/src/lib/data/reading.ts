@@ -4,7 +4,15 @@ import type { SynopsisModel } from './synopsis.js';
 export type ReadingBlock =
   | { kind: 'pericope'; id: string; title: string }
   | { kind: 'chapter'; chapter: number }
-  | { kind: 'verse'; chapter: number; verse: number; suf: string; text: string };
+  | {
+      kind: 'verse';
+      chapter: number;
+      verse: number;
+      suf: string;
+      text: string;
+      /** true у первой половины стиха — только она несёт якорь, id должен быть уникален */
+      anchor: boolean;
+    };
 
 interface Row {
   chapter: number;
@@ -55,6 +63,7 @@ export function buildReading(model: SynopsisModel, gospel: GospelKey): ReadingBl
 
   const blocks: ReadingBlock[] = [];
   const seen = new Set<string>();
+  const anchored = new Set<string>();
   let lastPid: string | null = null;
   let lastChapter: number | null = null;
 
@@ -72,7 +81,17 @@ export function buildReading(model: SynopsisModel, gospel: GospelKey): ReadingBl
       blocks.push({ kind: 'chapter', chapter: r.chapter });
       lastChapter = r.chapter;
     }
-    blocks.push({ kind: 'verse', chapter: r.chapter, verse: r.verse, suf: r.suf, text: r.text });
+    const anchorKey = `${r.chapter}-${r.verse}`;
+    const anchor = !anchored.has(anchorKey);
+    anchored.add(anchorKey);
+    blocks.push({
+      kind: 'verse',
+      chapter: r.chapter,
+      verse: r.verse,
+      suf: r.suf,
+      text: r.text,
+      anchor
+    });
   }
   return blocks;
 }
