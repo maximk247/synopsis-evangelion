@@ -1,8 +1,9 @@
 <script lang="ts">
   import type { Pericope, GospelKey, Segment } from '@synopsis/schema';
   import { isVerse } from '@synopsis/schema';
-  import { GOSPEL_LABELS } from '$lib/data/labels.js';
+  import { GOSPEL_LABELS, gospelHeading } from '$lib/data/labels.js';
   import { verseKey } from '$lib/data/alignment.js';
+  import { contextPanel } from '$lib/stores/context-panel.svelte.js';
   import VerseItem from './VerseItem.svelte';
   import NoteItem from './NoteItem.svelte';
   import ColumnTabs from './ColumnTabs.svelte';
@@ -18,6 +19,17 @@
   function itemKey(g: GospelKey, seg: Segment, v: number): string {
     return verseKey(g, seg.chapter, v);
   }
+
+  // номера стихов сегмента — подсветка в панели контекста (суффиксы половин не важны)
+  function segmentVerses(seg: Segment): number[] {
+    return seg.items.filter(isVerse).map((item) => item.v);
+  }
+
+  function openChapter(g: GospelKey, seg: Segment) {
+    // клик, которым закончили выделять текст, читать главу не просят
+    if (window.getSelection()?.toString()) return;
+    contextPanel.open(g, seg.chapter, segmentVerses(seg));
+  }
 </script>
 
 <!-- Mobile: tabs (CSS shows this only at <=760px) -->
@@ -32,8 +44,14 @@
       <h2 class="col__head">{GOSPEL_LABELS[g].nom}</h2>
       {#if col}
         {#each col.segments as seg, si (g + '-' + si)}
-          <div class="seg">
-            <p class="chapter">Гл. {seg.chapter}</p>
+          <!-- клик по всему сегменту; клавиатурный путь — кнопка "Гл. N" внутри, её click всплывает сюда -->
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div class="seg" onclick={() => openChapter(g, seg)}>
+            <button class="chapter" aria-label="Читать {gospelHeading(g)}, глава {seg.chapter}"
+              >Гл. {seg.chapter}</button
+            >
+            <span class="tip" aria-hidden="true">Читать главу целиком</span>
             <div class="flow">
               {#each seg.items as item, i (i)}
                 {#if isVerse(item)}
@@ -78,11 +96,20 @@
     background: var(--card);
   }
   .chapter {
-    color: var(--fg-muted);
-    font-size: var(--fs-caption);
+    display: block;
     margin: 0 0 0.3rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--fg-muted);
+    font: inherit;
+    font-size: var(--fs-caption);
     text-transform: uppercase;
     letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+  .seg:hover .chapter {
+    color: var(--accent);
   }
   .flow {
     margin: 0 0 0.5rem;
@@ -91,11 +118,45 @@
     text-wrap: pretty;
   }
   .seg {
+    position: relative;
     padding: 0.85rem 0.9rem 0.2rem;
     margin-bottom: 0.35rem;
+    border-radius: var(--radius);
+    cursor: pointer;
+  }
+  .seg:hover,
+  .seg:focus-within {
+    background: color-mix(in srgb, var(--hover) 55%, transparent);
   }
   .seg + .seg {
     border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  }
+  /* подсказка про клик — только там, где есть настоящее наведение */
+  .tip {
+    display: none;
+  }
+  @media (hover: hover) {
+    .tip {
+      display: block;
+      position: absolute;
+      top: 0.5rem;
+      right: 0.6rem;
+      padding: 0.1rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      background: var(--card);
+      box-shadow: var(--shadow-sm);
+      color: var(--fg-secondary);
+      font-size: var(--fs-caption);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+    .seg:hover .tip,
+    .seg:focus-within .tip {
+      opacity: 1;
+    }
   }
   .mobile-only {
     display: none;

@@ -30,6 +30,19 @@ describe('buildReading', () => {
     }
   });
 
+  it('anchors each chapter-verse once, so half-verses cannot collide on the same id', () => {
+    for (const g of ['mt', 'mk', 'lk', 'jn'] as const) {
+      const anchors = new Set<string>();
+      for (const b of buildReading(model, g)) {
+        if (b.kind !== 'verse' || !b.anchor) continue;
+        const key = `${b.chapter}-${b.verse}`;
+        expect(anchors.has(key)).toBe(false);
+        anchors.add(key);
+      }
+      expect(anchors.size).toBeGreaterThan(0);
+    }
+  });
+
   it('deduplicates repeated verses (each chapter-verse-suf appears once)', () => {
     const blocks = buildReading(model, 'lk');
     const seen = new Set<string>();

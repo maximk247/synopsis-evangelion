@@ -4,6 +4,7 @@
   import { page } from '$app/state';
   import { settings } from '$lib/stores/settings.svelte.js';
   import SettingsDrawer from '$lib/components/SettingsDrawer.svelte';
+  import ContextPanel from '$lib/components/ContextPanel.svelte';
 
   let { children } = $props();
   let settingsOpen = $state(false);
@@ -65,6 +66,7 @@
 </main>
 
 <SettingsDrawer bind:open={settingsOpen} />
+<ContextPanel />
 
 <style>
   .topbar {
