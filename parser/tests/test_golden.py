@@ -51,3 +51,65 @@ def test_pericope_51_1_beatitudes_numbered(parsed):
     assert len(verses) > 0
     assert any(it["v"] == 3 for it in verses)
     assert p["columns"]["lk"] is not None  # Luke 6 parallel present
+
+
+def test_pericope_90_second_table_splits_matthew_and_luke(parsed):
+    # Вторая таблица перикопы набрана по другой сетке колонок: Мф 11:20-24 слева,
+    # Лк 10:13-16 справа. Обе колонки должны попасть каждая в своё евангелие.
+    p = _by_id(parsed, "90")
+    assert p is not None
+    assert p["columns"]["mk"] is None
+    assert p["columns"]["jn"] is None
+
+    def verses(g):
+        return {
+            it["v"]: it["t"]
+            for s in p["columns"][g]["segments"]
+            for it in s["items"]
+            if "v" in it
+        }
+
+    mt = verses("mt")
+    lk = verses("lk")
+    assert sorted(mt) == [20, 21, 22, 23, 24]
+    assert sorted(lk) == list(range(1, 17))
+    assert mt[21].endswith("во вретище и пепле покаялись,")
+    assert lk[13].startswith("Горе тебе, Хоразин!")
+    assert lk[16].endswith("отвергается Пославшего Меня.")
+
+    mt_seg = next(s for s in p["columns"]["mt"]["segments"] if s["chapter"] == 11)
+    assert mt_seg["prev"]["ref"] == "11:2–19"
+    assert mt_seg["next"]["ref"] == "11:25–30"
+    lk_last = p["columns"]["lk"]["segments"][-1]
+    assert lk_last["next"]["ref"] == "10:17–24"
+
+
+def test_segments_live_in_the_column_of_their_own_gospel(parsed):
+    # Зона может сменить евангелие посреди перикопы; сегмент всё равно должен
+    # попасть в колонку своего евангелия, иначе читалка покажет чужой текст.
+    for p in parsed["pericopes"]:
+        for g, col in p["columns"].items():
+            if not col:
+                continue
+            for seg in col["segments"]:
+                assert seg["gospel"] == g, f'п.{p["id"]}: {seg["gospel"]}.{seg["chapter"]} в колонке {g}'
+
+
+def test_pericope_154_luke_column_is_not_matthew(parsed):
+    # Лк 23:13-16 набраны в перикопе под колонкой Мф
+    p = _by_id(parsed, "154")
+    assert p is not None
+    seg = next(s for s in p["columns"]["lk"]["segments"] if s["chapter"] == 23)
+    assert [it["v"] for it in seg["items"] if "v" in it] == [13, 14, 15, 16]
+    mt_chapters = {s["chapter"] for s in p["columns"]["mt"]["segments"]}
+    assert mt_chapters == {27}
+
+
+def test_pericope_143_3_mark_column_is_not_john(parsed):
+    # Мк 14:18-21 набраны в перикопе под колонкой Ин
+    p = _by_id(parsed, "143.3")
+    assert p is not None
+    seg = next(s for s in p["columns"]["mk"]["segments"] if s["chapter"] == 14)
+    assert [it["v"] for it in seg["items"] if "v" in it] == [18, 19, 20, 21]
+    jn_chapters = {s["chapter"] for s in p["columns"]["jn"]["segments"]}
+    assert jn_chapters == {13}

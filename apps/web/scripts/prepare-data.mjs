@@ -16,54 +16,6 @@ mkdirSync(genDir, { recursive: true });
 
 const data = JSON.parse(readFileSync(src, 'utf8'));
 
-// 0) fix known parser misattributions: the PDF extraction dropped these segments
-//    into the wrong gospel column. "pericope:gospel:chapter" -> correct gospel.
-const SEGMENT_MOVES = {
-  '131:mt:12': 'jn', // Ин 12:14–19 landed in Matthew
-  '131:mt:19': 'lk', // Лк 19:39–44 landed in Matthew
-  '131:mk:19': 'lk', // Лк 19:37 landed in Mark
-  '165:jn:28': 'mt' // Мф 28:1–10 landed in John
-};
-
-function firstVerse(seg) {
-  const v = seg.items.find((it) => typeof it.v === 'number');
-  return v ? v.v : Infinity;
-}
-
-for (const p of data.pericopes) {
-  const moves = [];
-  for (const [g, col] of Object.entries(p.columns)) {
-    if (!col) continue;
-    col.segments = col.segments.filter((seg) => {
-      const target = SEGMENT_MOVES[`${p.id}:${g}:${seg.chapter}`];
-      if (!target) return true;
-      moves.push([target, seg]);
-      return false;
-    });
-  }
-  for (const [target, seg] of moves) {
-    if (!p.columns[target]) p.columns[target] = { segments: [] };
-    p.columns[target].segments.push(seg);
-  }
-  // a pericope that needed moves has scrambled segment order overall — normalize it
-  if (moves.length) {
-    for (const col of Object.values(p.columns)) {
-      if (!col) continue;
-      col.segments.sort((a, b) => a.chapter - b.chapter || firstVerse(a) - firstVerse(b));
-      col.segments = col.segments.reduce((acc, seg) => {
-        const prev = acc[acc.length - 1];
-        if (prev && prev.chapter === seg.chapter) {
-          prev.items.push(...seg.items);
-          prev.next = seg.next ?? prev.next;
-        } else {
-          acc.push(seg);
-        }
-        return acc;
-      }, []);
-    }
-  }
-}
-
 // verses missing from the JustBible dump (gaps in their data)
 const CANONICAL_PATCHES = {
   'mt:26:32': 'по воскресении же Моем предварю вас в Галилее.'
