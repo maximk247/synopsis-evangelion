@@ -15,6 +15,7 @@ import os
 import re
 import sys
 from collections import defaultdict
+from itertools import count
 
 import pdfplumber
 
@@ -206,6 +207,9 @@ def scan_band_line(chars):
     return headers, annotations
 
 
+# Аннотация, допустимая в строке-шапке: только перекрёстная ссылка.
+GRID_ANN_RE = re.compile(r"^\(?\s*(?:ранее|далее|долее|см)")
+
 REHEADER_RE = re.compile(
     r"^\s*((?:(?:Мф|Мк|Лк|Ин)\.?\s*)+)[\.\s]*([0-9Зб]+)?\s*(\(.*)?$"
 )
@@ -386,6 +390,9 @@ MISSING_VERSE_NUMBERS = {
 
 
 class Zone:
+    # сквозная нумерация сегментов: порядок создания = порядок в книге
+    _seq = count()
+
     def __init__(self, x0, gospel_key, chapter):
         self.x0 = x0
         self.gospel = gospel_key      # 'mt'... или None (пустая)
@@ -400,7 +407,8 @@ class Zone:
         self.flush()
         self.cur_seg = {
             "gospel": self.gospel, "chapter": chapter,
-            "prev": prev, "next": None, "items": []}
+            "prev": prev, "next": None, "items": [],
+            "_order": next(Zone._seq)}
         self.segments.append(self.cur_seg)
         self.cur_verse = None
 
@@ -483,7 +491,39 @@ class PericopeBuilder:
                     z.cur_seg["items"].append({"note": clean})
             elif clean.strip("() ") or prev or nxt:
                 log(f"  ? п.{self.id}: аннотация у пустой зоны {zi}: '{text}'")
+        self.band_lines = []
         self.state = "body"
+
+    def grid_line_headers(self, chars):
+        """Строка целиком из подписей колонок с новой сеткой -> её заголовки.
+
+        Внутри перикопы бывает вторая таблица со своей вёрсткой колонок
+        (п.90: Лк во всю ширину, ниже Мф и Лк рядом). Такую строку надо
+        разбирать как новую шапку, иначе текст правой колонки приклеивается
+        к левой."""
+        headers, anns = scan_band_line(chars)
+        if len(headers) < 2 or self.looks_like_body_start(chars):
+            return None
+        if any(not GRID_ANN_RE.match(text.strip()) for _x0, text in anns):
+            return None
+        # новая сетка объявляет всю таблицу целиком; более узкая строка - это
+        # повтор шапки для колонок, перенесённых на следующую страницу ('Мф.4 Мк.1')
+        if self.zones and (len(headers) < len(self.zones)
+                           or headers[-1][0] < self.zones[-1].x0 - 8):
+            return None
+        if len(headers) == len(self.zones) and all(
+                abs(h[0] - z.x0) <= 8 for h, z in zip(headers, self.zones)):
+            return None
+        return headers
+
+    def start_new_band(self, top, chars):
+        """Сменить сетку колонок: старые зоны отложить, шапку разобрать заново."""
+        for z in self.zones:
+            z.flush()
+        self.done_zones.extend(self.zones)
+        self.zones = []
+        self.band_lines = [(top, chars)]
+        self.finish_band()
 
     def zone_index(self, x0):
         idx = 0
@@ -581,6 +621,10 @@ class PericopeBuilder:
             src = m.group(1).replace(" ", "") + "." + m.group(2)
             self.extra = {"source": src, "items": []}
             self.state = "extra"
+            return
+
+        if self.grid_line_headers(chars):
+            self.start_new_band(top, chars)
             return
 
         # распределяем СИМВОЛЫ по зонам (граница может проходить внутри
@@ -705,14 +749,19 @@ class PericopeBuilder:
         m = re.match(r"^(\d+(?:\.\d+)?)(?:\.\s*|\s+)(.*)$", title)
         tid, ttext = (m.group(1), m.group(2)) if m else (self.id, title)
         columns = {g: None for g in GOSPel_ORDER}
-        for z in self.zones:
-            if z.gospel and z.segments:
-                segs = [s for s in z.segments if s["items"] or s["prev"] or s["next"]]
-                if not segs:
-                    continue
-                if columns[z.gospel] is None:
-                    columns[z.gospel] = {"segments": []}
-                columns[z.gospel]["segments"].extend(segs)
+        # раскладываем по евангелию самого сегмента, а не по колонке зоны: зона
+        # могла сменить евангелие посреди перикопы (Лк 19:39-44 в зоне Мф, п.131).
+        # Порядок внутри колонки - как в книге, поэтому по номеру создания.
+        by_gospel = defaultdict(list)
+        for z in self.done_zones + self.zones:
+            for seg in z.segments:
+                if seg["gospel"] and (seg["items"] or seg["prev"] or seg["next"]):
+                    by_gospel[seg["gospel"]].append(seg)
+        for g, segs in by_gospel.items():
+            segs.sort(key=lambda s: s["_order"])
+            for seg in segs:
+                del seg["_order"]
+            columns[g] = {"segments": segs}
         out = {
             "id": tid,
             "title": ttext.strip(),
