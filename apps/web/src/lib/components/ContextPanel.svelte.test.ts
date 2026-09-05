@@ -38,7 +38,7 @@ describe('ContextPanel', () => {
     // весь текст главы, а не только стихи перикопы
     expect(screen.getByText('Увидев народ')).toBeTruthy();
 
-    const marked = document.querySelectorAll('.verse.hl');
+    const marked = document.querySelectorAll('.hl .verse');
     expect(marked.length).toBe(1);
     expect(marked[0]!.getAttribute('data-v')).toBe('3');
   });
@@ -50,11 +50,46 @@ describe('ContextPanel', () => {
 
     await fireEvent.click(screen.getByLabelText('Следующая глава'));
     await waitFor(() => expect(screen.getByText('Смотрите, не творите')).toBeTruthy());
-    expect(document.querySelectorAll('.verse.hl').length).toBe(0);
+    expect(document.querySelectorAll('.hl .verse').length).toBe(0);
     expect(screen.queryByText('Блаженны нищие духом')).toBeNull();
 
     await fireEvent.click(screen.getByLabelText('Предыдущая глава'));
-    await waitFor(() => expect(document.querySelectorAll('.verse.hl').length).toBe(1));
+    await waitFor(() => expect(document.querySelectorAll('.hl .verse').length).toBe(1));
+  });
+
+  it('picks a chapter from the grid behind the title', async () => {
+    render(ContextPanel);
+    contextPanel.open('mt', 5, [3]);
+    await waitFor(() => expect(screen.getByText('Блаженны нищие духом')).toBeTruthy());
+
+    const title = screen.getByRole('button', { expanded: false });
+    await fireEvent.click(title);
+
+    const grid = document.querySelector('.picker')!;
+    expect([...grid.querySelectorAll('.num')].map((b) => b.textContent)).toEqual(['5', '6']);
+    expect(grid.querySelector('.num.current')?.textContent).toBe('5');
+
+    await fireEvent.click(grid.querySelectorAll('.num')[1]!);
+    await waitFor(() => expect(screen.getByText('Смотрите, не творите')).toBeTruthy());
+    // сетка сама закрывается после выбора
+    expect(document.querySelector('.picker')).toBeNull();
+  });
+
+  it('Escape closes the chapter grid first, the panel second', async () => {
+    render(ContextPanel);
+    contextPanel.open('mt', 5, [3]);
+    await waitFor(() => expect(screen.getByText('Блаженны нищие духом')).toBeTruthy());
+
+    await fireEvent.click(screen.getByRole('button', { expanded: false }));
+    expect(document.querySelector('.picker')).not.toBeNull();
+
+    const dialog = screen.getByRole('dialog');
+    await fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(document.querySelector('.picker')).toBeNull();
+    expect(screen.queryByRole('dialog')).not.toBeNull();
+
+    await fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('disables the arrows at the edges of the book', async () => {
