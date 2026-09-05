@@ -39,6 +39,17 @@ def test_pericope_51_11_lord_prayer_luke_verse_4(parsed):
     assert verses[4].startswith("и прости нам грехи наши,")
 
 
+def test_pericope_130_matthew_verse_10(parsed):
+    # В вёрстке PDF номер Мф 26:10 набран с точкой - такой токен тоже номер стиха
+    p = _by_id(parsed, "130")
+    assert p is not None
+    seg = next(s for s in p["columns"]["mt"]["segments"] if s["chapter"] == 26)
+    verses = {it["v"]: it["t"] for it in seg["items"] if "v" in it}
+    assert sorted(verses) == [6, 7, 8, 9, 10, 11, 12, 13]
+    assert verses[9].endswith("за большую цену и дать нищим.")
+    assert verses[10].startswith("Но Иисус, уразумев сие,")
+
+
 def test_pericope_51_1_beatitudes_numbered(parsed):
     p = _by_id(parsed, "51.1")
     assert p is not None
