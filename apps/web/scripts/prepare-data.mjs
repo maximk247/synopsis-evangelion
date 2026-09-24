@@ -16,6 +16,27 @@ mkdirSync(genDir, { recursive: true });
 
 const data = JSON.parse(readFileSync(src, 'utf8'));
 
+// Notes after these verses are fragments of John's text spilling into adjacent columns.
+// The complete John passages are restored from canonical text below.
+const TRAILING_FRAGMENT_NOTES = {
+  143.3: [['lk', 22, 23]], // Ин 13:23–30
+  165: [
+    ['mk', 16, 11],
+    ['lk', 24, 12]
+  ] // Ин 20:12–18
+};
+
+for (const p of data.pericopes) {
+  for (const [g, chapter, lastVerse] of TRAILING_FRAGMENT_NOTES[p.id] ?? []) {
+    for (const seg of p.columns[g]?.segments ?? []) {
+      if (seg.chapter !== chapter) continue;
+      const end = seg.items.findIndex((item) => item.v === lastVerse);
+      if (end < 0) continue;
+      seg.items = seg.items.filter((item, i) => i <= end || typeof item.note !== 'string');
+    }
+  }
+}
+
 // verses missing from the JustBible dump (gaps in their data)
 const CANONICAL_PATCHES = {
   'mt:26:32': 'по воскресении же Моем предварю вас в Галилее.'
