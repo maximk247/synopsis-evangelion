@@ -10,6 +10,22 @@
 
   let { pericope, present }: { pericope: Pericope; present: GospelKey[] } = $props();
 
+  // Разрывы таблиц PDF не должны разделять продолжение одной главы в ридере.
+  const columns = $derived(
+    present.map((g) => {
+      const segments: Segment[] = [];
+      for (const seg of pericope.columns[g]?.segments ?? []) {
+        const previous = segments[segments.length - 1];
+        if (previous?.chapter === seg.chapter) {
+          previous.items.push(...seg.items);
+        } else {
+          segments.push({ ...seg, items: [...seg.items] });
+        }
+      }
+      return { g, segments };
+    })
+  );
+
   // active mobile tab: a user pin if it is still valid, else the first present gospel
   let pinnedTab = $state<GospelKey | null>(null);
   const activeTab = $derived<GospelKey>(
@@ -38,32 +54,29 @@
 </div>
 
 <div class="grid" style="--cols: {present.length}">
-  {#each present as g (g)}
-    {@const col = pericope.columns[g]}
+  {#each columns as { g, segments } (g)}
     <section class="col" class:mobile-active={g === activeTab} aria-label={GOSPEL_LABELS[g].nom}>
       <h2 class="col__head">{GOSPEL_LABELS[g].nom}</h2>
-      {#if col}
-        {#each col.segments as seg, si (g + '-' + si)}
-          <!-- клик по всему сегменту; клавиатурный путь — кнопка "Гл. N" внутри, её click всплывает сюда -->
-          <!-- svelte-ignore a11y_click_events_have_key_events -->
-          <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <div class="seg" onclick={() => openChapter(g, seg)}>
-            <button class="chapter" aria-label="Читать {gospelHeading(g)}, глава {seg.chapter}"
-              >Гл. {seg.chapter}</button
-            >
-            <span class="tip" aria-hidden="true">Читать главу целиком</span>
-            <div class="flow">
-              {#each seg.items as item, i (i)}
-                {#if isVerse(item)}
-                  <VerseItem {item} id={itemKey(g, seg, item.v)} />
-                {:else}
-                  <NoteItem {item} />{' '}
-                {/if}
-              {/each}
-            </div>
+      {#each segments as seg, si (g + '-' + si)}
+        <!-- клик по всему сегменту; клавиатурный путь — кнопка "Гл. N" внутри, её click всплывает сюда -->
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div class="seg" onclick={() => openChapter(g, seg)}>
+          <button class="chapter" aria-label="Читать {gospelHeading(g)}, глава {seg.chapter}"
+            >Гл. {seg.chapter}</button
+          >
+          <span class="tip" aria-hidden="true">Читать главу целиком</span>
+          <div class="flow">
+            {#each seg.items as item, i (i)}
+              {#if isVerse(item)}
+                <VerseItem {item} id={itemKey(g, seg, item.v)} />
+              {:else}
+                <NoteItem {item} />{' '}
+              {/if}
+            {/each}
           </div>
-        {/each}
-      {/if}
+        </div>
+      {/each}
     </section>
   {/each}
 </div>
